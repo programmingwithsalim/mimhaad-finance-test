@@ -76,10 +76,10 @@ export class OptimizedFloatStatementService {
       );
 
       // Step 1: Get GL account mappings for this float
-      // Payment floats (MoMo, Cash, Agency): Include both specific AND generic transaction-type mappings
-      // Service floats (Jumia, Power, E-Zwich): Include ONLY specific mappings
+      // Payment floats (MoMo, Cash): Include both specific AND generic transaction-type mappings
+      // Service floats (Agency, Jumia, Power, E-Zwich): Include ONLY specific mappings
 
-      const paymentFloats = ["cash-in-till", "momo", "agency-banking"];
+      const paymentFloats = ["cash-in-till", "momo"];
       const isPaymentFloat = paymentFloats.includes(account.account_type);
 
       let glMappings;
@@ -267,10 +267,13 @@ export class OptimizedFloatStatementService {
       const paginatedEntries = allEntries.slice(offset, offset + pageSize);
 
       // Step 3: Determine account type for balance calculation
+      // Assets increase with debits, decrease with credits
+      // Liabilities increase with credits, decrease with debits
       const isAsset =
         account.account_type === "cash-in-till" ||
         account.account_type === "bank" ||
-        account.account_type === "cash";
+        account.account_type === "cash" ||
+        account.account_type === "momo"; // MoMo is also an asset (cash equivalent)
 
       // Calculate running balance
       const statementEntries: FloatStatementEntry[] = [];
