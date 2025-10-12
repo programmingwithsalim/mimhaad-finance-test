@@ -1,0 +1,278 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 231 63% 30%; /* Deep blue for text */
+    --card: 0 0% 100%;
+    --card-foreground: 231 63% 30%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 231 63% 30%;
+    --primary: 212 100% 36%; /* Royal Blue */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 51 100% 50%; /* Yellow */
+    --secondary-foreground: 231 63% 30%; /* Deep blue */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 231 63% 30%;
+    --accent: 51 100% 50%; /* Yellow */
+    --accent-foreground: 231 63% 30%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 212 100% 36%; /* Royal Blue border */
+    --input: 212 100% 36%;
+    --ring: 212 100% 36%;
+    --radius: 0.5rem;
+
+    /* Sidebar specific variables */
+    --sidebar-background: 212 100% 36%; /* Royal Blue */
+    --sidebar-foreground: 0 0% 100%; /* White */
+    --sidebar-primary: 51 100% 50%; /* Yellow */
+    --sidebar-primary-foreground: 231 63% 30%;
+    --sidebar-accent: 51 100% 50%; /* Yellow */
+    --sidebar-accent-foreground: 231 63% 30%;
+    --sidebar-border: 51 100% 50%; /* Yellow border */
+    --sidebar-ring: 51 100% 50%;
+    /* Default sidebar width */
+    --sidebar-width: 16rem;
+  }
+
+  .dark {
+    --background: 231 63% 30%;
+    --foreground: 51 100% 50%;
+    --card: 231 63% 30%;
+    --card-foreground: 51 100% 50%;
+    --popover: 231 63% 30%;
+    --popover-foreground: 51 100% 50%;
+    --primary: 51 100% 50%; /* Yellow */
+    --primary-foreground: 231 63% 30%;
+    --secondary: 212 100% 36%; /* Royal Blue */
+    --secondary-foreground: 0 0% 100%;
+    --muted: 231 63% 30%;
+    --muted-foreground: 51 100% 50%;
+    --accent: 212 100% 36%; /* Royal Blue */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 51 100% 50%; /* Yellow border */
+    --input: 51 100% 50%;
+    --ring: 51 100% 50%;
+
+    /* Sidebar specific variables */
+    --sidebar-background: 231 63% 30%; /* Deep blue */
+    --sidebar-foreground: 51 100% 50%; /* Yellow */
+    --sidebar-primary: 51 100% 50%; /* Yellow */
+    --sidebar-primary-foreground: 231 63% 30%;
+    --sidebar-accent: 212 100% 36%; /* Royal Blue */
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 51 100% 50%; /* Yellow border */
+    --sidebar-ring: 51 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom animations */
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.animate-accordion-down {
+  animation: accordion-down 0.2s ease-out;
+}
+
+.animate-accordion-up {
+  animation: accordion-up 0.2s ease-out;
+}
+
+/* Add these styles at the end of the file to improve visibility of UI elements */
+@layer utilities {
+  .sidebar-shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .search-input-focus {
+    @apply focus:bg-background focus:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/30;
+  }
+
+  .menu-item-active {
+    @apply bg-primary/10 text-primary font-medium;
+  }
+
+  .menu-item-hover {
+    @apply hover:bg-accent hover:text-foreground transition-colors duration-200;
+  }
+}
+
+/* Responsive layout adjustments based on sidebar state */
+:root {
+  --sidebar-width: 16rem;
+}
+
+html[data-sidebar-collapsed="true"] {
+  --sidebar-width: 5rem;
+}
+
+html[data-sidebar-collapsed="false"] {
+  --sidebar-width: 16rem;
+}
+
+/* Add this to ensure the main content doesn't get overlapped */
+@media (max-width: 1023px) {
+  :root {
+    --sidebar-width: 0;
+  }
+}
+
+/* Enhanced Sidebar Styles */
+@layer components {
+  .sidebar-shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .sidebar-backdrop {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Smooth transitions for sidebar items */
+  [data-sidebar="menu-button"] {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  [data-sidebar="menu-button"]:hover {
+    transform: translateX(2px);
+  }
+
+  /* Active state styling */
+  [data-sidebar="menu-button"][data-active="true"] {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+    font-weight: 500;
+    border-left: 3px solid hsl(var(--primary));
+  }
+
+  /* Sub-menu styling */
+  [data-sidebar="menu-sub"] {
+    border-left: 1px solid hsl(var(--border));
+    margin-left: 1rem;
+    padding-left: 0.75rem;
+  }
+
+  /* Collapsible animation */
+  [data-state="open"] [data-sidebar="menu-button"] {
+    background: hsl(var(--accent) / 0.5);
+  }
+
+  /* Badge styling in sidebar */
+  .sidebar-badge {
+    font-size: 0.625rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+  }
+
+  /* Header styling */
+  [data-sidebar="header"] {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--sidebar-primary) / 0.15) 0%,
+      hsl(var(--sidebar-accent) / 0.1) 100%
+    );
+    border-bottom: 1px solid hsl(var(--sidebar-border) / 0.5);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    [data-sidebar="sidebar"] {
+      width: 100%;
+      max-width: 280px;
+    }
+  }
+
+  /* Sidebar gradient background */
+  [data-sidebar="sidebar"] {
+    background: linear-gradient(
+      160deg,
+      hsl(var(--sidebar-background)) 80%,
+      hsl(var(--sidebar-accent)) 100%
+    );
+    color: hsl(var(--sidebar-foreground));
+  }
+
+  /* Collapsible navigation animations */
+  .nav-section-content {
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-section-content[data-expanded="true"] {
+    max-height: 500px;
+    opacity: 1;
+  }
+
+  .nav-section-content[data-expanded="false"] {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  /* Chevron rotation animation */
+  .nav-section-chevron {
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .nav-section-chevron[data-expanded="true"] {
+    transform: rotate(180deg);
+  }
+
+  /* Section header hover effects */
+  .nav-section-header {
+    transition: all 0.2s ease-in-out;
+  }
+
+  .nav-section-header:hover {
+    background-color: hsl(var(--accent) / 0.1);
+  }
+
+  .nav-section-header[data-active="true"] {
+    background-color: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+}
+
+/* Dark mode enhancements */
+.dark {
+  [data-sidebar="header"] {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--sidebar-primary) / 0.1) 0%,
+      hsl(var(--sidebar-accent) / 0.1) 100%
+    );
+  }
+
+  [data-sidebar="menu-button"][data-active="true"] {
+    background: hsl(var(--accent));
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+}
