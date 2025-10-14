@@ -1,21 +1,32 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { neon } from "@neondatabase/serverless"
-import { AuditLoggerService } from "@/lib/services/audit-logger-service"
-import { GLPostingService } from "@/lib/services/gl-posting-service-corrected"
+import { type NextRequest, NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
+import { AuditLoggerService } from "@/lib/services/audit-logger-service";
+import { GLPostingService } from "@/lib/services/gl-posting-service-corrected";
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(process.env.DATABASE_URL!);
 
 // PUT - Update batch
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string  }> }) {
-  let body
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  let body;
   try {
-    const { id } = params
-    body = await request.json()
+    const { id } = params;
+    body = await request.json();
 
-    console.log("📝 Updating batch:", id, body)
+    console.log("Updating batch:", id, body);
 
     // Validate required fields
-    const { batch_code, quantity_received, card_type, expiry_date, notes, userId, branchId } = body
+    const {
+      batch_code,
+      quantity_received,
+      card_type,
+      expiry_date,
+      notes,
+      userId,
+      branchId,
+    } = body;
 
     if (!batch_code || !quantity_received || !card_type) {
       await AuditLoggerService.log({
@@ -29,15 +40,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         branchId,
         status: "failure",
         errorMessage: "Missing required fields",
-      })
+      });
 
-      return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     // Check if batch exists and get current data
     const existingBatch = await sql`
       SELECT * FROM ezwich_card_batches WHERE id = ${id}
-    `
+    `;
 
     if (existingBatch.length === 0) {
       await AuditLoggerService.log({
@@ -51,15 +65,18 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         branchId,
         status: "failure",
         errorMessage: "Batch not found",
-      })
+      });
 
-      return NextResponse.json({ success: false, error: "Batch not found" }, { status: 404 })
+      return NextResponse.json(
+        { success: false, error: "Batch not found" },
+        { status: 404 }
+      );
     }
 
-    const currentBatch = existingBatch[0]
+    const currentBatch = existingBatch[0];
 
     // Validate that new quantity_received is not less than quantity_issued
-    const quantityIssued = Number(currentBatch.quantity_issued || 0)
+    const quantityIssued = Number(currentBatch.quantity_issued || 0);
     if (Number(quantity_received) < quantityIssued) {
       await AuditLoggerService.log({
         userId: userId || "unknown",
@@ -77,26 +94,26 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         branchId,
         status: "failure",
         errorMessage: `Cannot reduce quantity below issued cards (${quantityIssued})`,
-      })
+      });
 
       return NextResponse.json(
         {
           success: false,
           error: `Cannot reduce quantity below issued cards (${quantityIssued})`,
         },
-        { status: 400 },
-      )
+        { status: 400 }
+      );
     }
 
     // Store old values for comparison
-    const oldQuantity = Number(currentBatch.quantity_received)
+    const oldQuantity = Number(currentBatch.quantity_received);
     const oldData = {
       batch_code: currentBatch.batch_code,
       quantity_received: oldQuantity,
       card_type: currentBatch.card_type,
       expiry_date: currentBatch.expiry_date,
       notes: currentBatch.notes,
-    }
+    };
 
     // Update the batch
     const updatedBatch = await sql`
@@ -123,11 +140,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         notes,
         created_at,
         updated_at
-    `
+    `;
 
-    const newBatch = updatedBatch[0]
+    const newBatch = updatedBatch[0];
 
-    console.log("✅ E-Zwich batch updated successfully:", newBatch.id)
+    console.log("E-Zwich batch updated successfully:", newBatch.id);
 
     // Create GL entries for the update if quantity changed
     try {
@@ -141,13 +158,16 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
           },
           userId || "unknown",
           branchId || newBatch.branch_id,
-          oldQuantity,
-        )
+          oldQuantity
+        );
 
-        console.log("✅ GL transaction created for batch update:", glTransactionId)
+        console.log(
+          "GL transaction created for batch update:",
+          glTransactionId
+        );
       }
     } catch (glError) {
-      console.error("❌ GL posting failed for batch update:", glError)
+      console.error("GL posting failed for batch update:", glError);
       // Continue with batch update even if GL posting fails
     }
 
@@ -174,7 +194,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       },
       severity: "medium",
       branchId: branchId || newBatch.branch_id,
-    })
+    });
 
     // Format the response
     const formattedBatch = {
@@ -184,7 +204,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       quantity_issued: Number(newBatch.quantity_issued),
       quantity_available: Number(newBatch.quantity_available),
       card_type: newBatch.card_type,
-      expiry_date: newBatch.expiry_date ? new Date(newBatch.expiry_date).toISOString().split("T")[0] : null,
+      expiry_date: newBatch.expiry_date
+        ? new Date(newBatch.expiry_date).toISOString().split("T")[0]
+        : null,
       status: newBatch.status,
       display_status: newBatch.status,
       branch_id: newBatch.branch_id,
@@ -193,16 +215,20 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       created_at: new Date(newBatch.created_at).toISOString(),
       updated_at: new Date(newBatch.updated_at).toISOString(),
       utilization_percentage:
-        newBatch.quantity_received > 0 ? Math.round((newBatch.quantity_issued / newBatch.quantity_received) * 100) : 0,
-    }
+        newBatch.quantity_received > 0
+          ? Math.round(
+              (newBatch.quantity_issued / newBatch.quantity_received) * 100
+            )
+          : 0,
+    };
 
     return NextResponse.json({
       success: true,
       data: formattedBatch,
       message: "Batch updated successfully",
-    })
+    });
   } catch (error) {
-    console.error("❌ Error updating batch:", error)
+    console.error("Error updating batch:", error);
 
     // Log failed audit
     await AuditLoggerService.log({
@@ -219,11 +245,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       branchId: body?.branchId,
       status: "failure",
       errorMessage: error instanceof Error ? error.message : String(error),
-    })
+    });
 
     // Handle unique constraint violation
     if (error instanceof Error && error.message.includes("duplicate key")) {
-      return NextResponse.json({ success: false, error: "Batch code already exists" }, { status: 409 })
+      return NextResponse.json(
+        { success: false, error: "Batch code already exists" },
+        { status: 409 }
+      );
     }
 
     return NextResponse.json(
@@ -232,20 +261,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         error: "Failed to update batch",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }
 
 // DELETE - Delete batch
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string  }> }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id } = params
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get("userId") || "unknown"
-    const branchId = searchParams.get("branchId")
+    const { id } = params;
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId") || "unknown";
+    const branchId = searchParams.get("branchId");
 
-    console.log("🗑️ Deleting batch:", id)
+    console.log("🗑️ Deleting batch:", id);
 
     // Check if batch exists and get its details
     const batch = await sql`
@@ -262,7 +294,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         created_by
       FROM ezwich_card_batches 
       WHERE id = ${id}
-    `
+    `;
 
     if (batch.length === 0) {
       await AuditLoggerService.log({
@@ -276,15 +308,18 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         branchId,
         status: "failure",
         errorMessage: "Batch not found",
-      })
+      });
 
-      return NextResponse.json({ success: false, error: "Batch not found" }, { status: 404 })
+      return NextResponse.json(
+        { success: false, error: "Batch not found" },
+        { status: 404 }
+      );
     }
 
-    const batchData = batch[0]
+    const batchData = batch[0];
 
     // Check if any cards have been issued from this batch
-    const quantityIssued = Number(batchData.quantity_issued || 0)
+    const quantityIssued = Number(batchData.quantity_issued || 0);
     if (quantityIssued > 0) {
       await AuditLoggerService.log({
         userId,
@@ -301,15 +336,15 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         branchId: branchId || batchData.branch_id,
         status: "failure",
         errorMessage: `Cannot delete batch with issued cards (${quantityIssued} cards issued)`,
-      })
+      });
 
       return NextResponse.json(
         {
           success: false,
           error: `Cannot delete batch with issued cards. ${quantityIssued} cards have been issued from this batch.`,
         },
-        { status: 400 },
-      )
+        { status: 400 }
+      );
     }
 
     // Create GL entries for the deletion (reverse entries)
@@ -322,21 +357,24 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
           quantity_received: Number(batchData.quantity_received),
         },
         userId,
-        branchId || batchData.branch_id,
-      )
+        branchId || batchData.branch_id
+      );
 
-      console.log("✅ GL reversal transaction created for batch deletion:", glTransactionId)
+      console.log(
+        "GL reversal transaction created for batch deletion:",
+        glTransactionId
+      );
     } catch (glError) {
-      console.error("❌ GL posting failed for batch deletion:", glError)
+      console.error("GL posting failed for batch deletion:", glError);
       // Continue with batch deletion even if GL posting fails
     }
 
     // Delete the batch
     await sql`
       DELETE FROM ezwich_card_batches WHERE id = ${id}
-    `
+    `;
 
-    console.log("✅ E-Zwich batch deleted successfully:", id)
+    console.log("E-Zwich batch deleted successfully:", id);
 
     // Log successful audit
     await AuditLoggerService.log({
@@ -355,18 +393,18 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       },
       severity: "high",
       branchId: branchId || batchData.branch_id,
-    })
+    });
 
     return NextResponse.json({
       success: true,
       message: "Batch deleted successfully",
-    })
+    });
   } catch (error) {
-    console.error("❌ Error deleting batch:", error)
+    console.error("Error deleting batch:", error);
 
     // Log failed audit
-    const { searchParams } = new URL(request.url)
-    const { id } = params // Add this line to declare 'id'
+    const { searchParams } = new URL(request.url);
+    const { id } = params; // Add this line to declare 'id'
     await AuditLoggerService.log({
       userId: searchParams?.get("userId") || "unknown",
       actionType: "batch_delete_failed",
@@ -380,7 +418,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       branchId: searchParams?.get("branchId"),
       status: "failure",
       errorMessage: error instanceof Error ? error.message : String(error),
-    })
+    });
 
     return NextResponse.json(
       {
@@ -388,17 +426,20 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         error: "Failed to delete batch",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }
 
 // GET - Get single batch
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string  }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id } = params
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get("userId") || "unknown"
+    const { id } = params;
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get("userId") || "unknown";
 
     // Log audit for read operation
     await AuditLoggerService.log({
@@ -409,29 +450,32 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       description: "Fetched single E-Zwich card batch",
       details: { batch_id: id },
       severity: "low",
-    })
+    });
 
     const batch = await sql`
       SELECT * FROM ezwich_card_batches WHERE id = ${id}
-    `
+    `;
 
     if (batch.length === 0) {
-      return NextResponse.json({ success: false, error: "Batch not found" }, { status: 404 })
+      return NextResponse.json(
+        { success: false, error: "Batch not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
       success: true,
       data: batch[0],
-    })
+    });
   } catch (error) {
-    console.error("❌ Error fetching batch:", error)
+    console.error("Error fetching batch:", error);
     return NextResponse.json(
       {
         success: false,
         error: "Failed to fetch batch",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }

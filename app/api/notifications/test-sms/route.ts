@@ -90,9 +90,9 @@ export async function POST(request: NextRequest) {
       };
     }
 
-    console.log("🔍 [TEST-SMS] Sending test SMS to:", testPhone);
-    console.log("🔍 [TEST-SMS] Using provider:", prefs.sms_provider);
-    console.log("🔍 [TEST-SMS] Configuration:", {
+    console.log("[TEST-SMS] Sending test SMS to:", testPhone);
+    console.log("[TEST-SMS] Using provider:", prefs.sms_provider);
+    console.log("[TEST-SMS] Configuration:", {
       provider: prefs.sms_provider,
       apiKey: prefs.sms_api_key ? "***" : "MISSING",
       apiSecret: prefs.sms_api_secret ? "***" : "MISSING",
@@ -108,10 +108,7 @@ export async function POST(request: NextRequest) {
       sms_sender_id: "MIMHAAD", // Try a shorter sender ID
     };
 
-    console.log(
-      "🔍 [TEST-SMS] Testing with sender ID:",
-      testConfig.sms_sender_id
-    );
+    console.log("[TEST-SMS] Testing with sender ID:", testConfig.sms_sender_id);
 
     // First try with the original configuration
     let result = await NotificationService["sendSMSNotification"](
@@ -129,7 +126,7 @@ export async function POST(request: NextRequest) {
     // If the first attempt fails, try with a different phone format
     if (!result.success) {
       console.log(
-        "🔍 [TEST-SMS] First attempt failed, trying alternative format..."
+        "[TEST-SMS] First attempt failed, trying alternative format..."
       );
 
       const alternativeConfig = {
@@ -150,12 +147,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("🔍 [TEST-SMS] Result:", result);
+    console.log("[TEST-SMS] Result:", result);
 
     // If successful, log the message ID for delivery tracking
     if (result.success && (result as any).messageId) {
       console.log(
-        "🔍 [TEST-SMS] Message ID for delivery tracking:",
+        "[TEST-SMS] Message ID for delivery tracking:",
         (result as any).messageId
       );
     }
@@ -167,7 +164,7 @@ export async function POST(request: NextRequest) {
       messageId: (result as any).messageId || null,
     });
   } catch (error) {
-    console.error("🔍 [TEST-SMS] Error:", error);
+    console.error("[TEST-SMS] Error:", error);
     return NextResponse.json(
       { success: false, error: "Failed to send test SMS" },
       { status: 500 }

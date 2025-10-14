@@ -119,7 +119,7 @@ export async function POST(
           `;
 
           console.log(
-            "✅ Reversed GL entries for rejected commission - Debit: " +
+            "Reversed GL entries for rejected commission - Debit: " +
               incomeAccount.name +
               ", Credit: " +
               arAccount.name

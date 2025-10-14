@@ -51,11 +51,10 @@ export async function POST(request: NextRequest) {
       message: "2FA verification successful",
     });
   } catch (error) {
-    console.error("❌ [2FA] Error verifying code:", error);
+    console.error("[2FA] Error verifying code:", error);
     return NextResponse.json(
       { success: false, error: "Failed to verify code" },
       { status: 500 }
     );
   }
 }
-

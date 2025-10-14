@@ -76,18 +76,9 @@ export async function getCurrentUser(
     const sessionToken = request.cookies?.get("session_token")?.value;
     if (sessionToken) {
       try {
-        devLog.info(
-          "🔍 [AUTH-UTILS] Found session token, validating with database..."
-        );
-
         const session = await getDatabaseSession(request);
 
         if (session && session.user) {
-          devLog.info(
-            "✅ [AUTH-UTILS] Valid database session found for user:",
-            session.user.email
-          );
-
           return {
             id: session.user.id,
             name: `${session.user.firstName} ${session.user.lastName}`,
@@ -99,14 +90,10 @@ export async function getCurrentUser(
             branchName: session.user.branchName || "Unknown Branch",
             phone: session.user.phone,
           };
-        } else {
-          devLog.info("❌ [AUTH-UTILS] Invalid or expired session token");
         }
       } catch (error) {
         devLog.error("Error validating session token:", error);
       }
-    } else {
-      devLog.info("🔍 [AUTH-UTILS] No session token found in cookies");
     }
 
     // Return a fallback user instead of throwing error

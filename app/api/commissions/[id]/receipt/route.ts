@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL!);
 // Upload receipt
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string  }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: commissionId } = await params;
@@ -76,10 +76,7 @@ export async function POST(
       WHERE id = ${commissionId}
     `;
 
-    console.log(
-      "✅ [COMMISSION] Receipt uploaded for commission:",
-      commissionId
-    );
+    console.log("[COMMISSION] Receipt uploaded for commission:", commissionId);
 
     return NextResponse.json({
       success: true,
@@ -88,7 +85,7 @@ export async function POST(
       size: receiptFile.size,
     });
   } catch (error) {
-    console.error("❌ [COMMISSION] Error uploading receipt:", error);
+    console.error("[COMMISSION] Error uploading receipt:", error);
     return NextResponse.json(
       {
         success: false,
@@ -103,7 +100,7 @@ export async function POST(
 // Download receipt
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string  }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: commissionId } = await params;
@@ -151,7 +148,7 @@ export async function GET(
 
     return response;
   } catch (error) {
-    console.error("❌ [COMMISSION] Error downloading receipt:", error);
+    console.error("[COMMISSION] Error downloading receipt:", error);
     return NextResponse.json(
       {
         success: false,

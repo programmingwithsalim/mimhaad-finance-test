@@ -60,11 +60,10 @@ export async function POST(request: NextRequest) {
         "Save these backup codes in a secure location. You will not be able to see them again.",
     });
   } catch (error) {
-    console.error("❌ [2FA] Error enabling 2FA:", error);
+    console.error("[2FA] Error enabling 2FA:", error);
     return NextResponse.json(
       { success: false, error: "Failed to enable 2FA" },
       { status: 500 }
     );
   }
 }
-

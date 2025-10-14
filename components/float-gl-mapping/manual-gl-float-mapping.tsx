@@ -222,7 +222,7 @@ export function ManualGLFloatMapping() {
         throw new Error(result.error || "Failed to create mapping");
       }
     } catch (error) {
-      console.error("❌ Error creating mapping:", error);
+      console.error("Error creating mapping:", error);
       toast({
         title: "Error",
         description:
@@ -260,7 +260,7 @@ export function ManualGLFloatMapping() {
         throw new Error(result.error || "Failed to delete mapping");
       }
     } catch (error) {
-      console.error("❌ Error deleting mapping:", error);
+      console.error("Error deleting mapping:", error);
       toast({
         title: "Error",
         description:
@@ -383,7 +383,7 @@ export function ManualGLFloatMapping() {
           <div className="space-y-6">
             <div>
               <h3 className="font-semibold text-lg mb-3">
-                🏦 What is GL-Float Mapping?
+                What is GL-Float Mapping?
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 GL-Float mapping connects your operational float accounts (where

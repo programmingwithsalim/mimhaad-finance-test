@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
         LEFT JOIN float_accounts fa ON cb.payment_method_id = fa.id
         ORDER BY cb.created_at DESC
       `;
-      console.log(`🔍 [DEBUG] Admin: Found ${batches.length} total batches`);
+      console.log(`[DEBUG] Admin: Found ${batches.length} total batches`);
     } else {
       // Non-admin users only see their branch's batches
       batches = await sql`
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
         ORDER BY cb.created_at DESC
       `;
       console.log(
-        `🔍 [DEBUG] Non-admin: Found ${batches.length} batches for branch ${user.branchId}`
+        `[DEBUG] Non-admin: Found ${batches.length} batches for branch ${user.branchId}`
       );
     }
 

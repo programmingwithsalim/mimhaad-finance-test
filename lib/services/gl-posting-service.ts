@@ -243,7 +243,7 @@ export class GLPostingService {
       const glTransactionData: GLTransactionData = {
         date: new Date().toISOString().split("T")[0],
         sourceModule: "commissions",
-        sourceTransactionId: `${params.commissionId}-payment`,
+        sourceTransactionId: params.commissionId,
         sourceTransactionType: "commission_payment",
         description: `Commission payment received - ${params.source} - ${params.reference}`,
         entries,
@@ -481,7 +481,7 @@ export class GLPostingService {
 
       return await this.createAndPostTransaction(glTransactionData, true);
     } catch (error) {
-      console.error("❌ Error creating MoMo GL entries:", error);
+      console.error("Error creating MoMo GL entries:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),

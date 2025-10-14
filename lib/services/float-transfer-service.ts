@@ -38,7 +38,7 @@ export class FloatTransferService {
     data: FloatTransferRequest
   ): Promise<FloatTransfer> {
     console.log(
-      `🔄 [FLOAT-TRANSFER] Creating transfer: ${data.amount} from ${data.sourceAccountId} to ${data.destinationAccountId}`
+      `[FLOAT-TRANSFER] Creating transfer: ${data.amount} from ${data.sourceAccountId} to ${data.destinationAccountId}`
     );
 
     // Validate accounts exist and are active
@@ -97,7 +97,7 @@ export class FloatTransferService {
       // Create GL entries
       await this.createGLEntries(transfer[0], data);
 
-      console.log(`✅ [FLOAT-TRANSFER] Transfer completed: ${reference}`);
+      console.log(`[FLOAT-TRANSFER] Transfer completed: ${reference}`);
       return transfer[0];
     } catch (error) {
       // Mark transfer as failed
@@ -107,7 +107,7 @@ export class FloatTransferService {
         WHERE id = ${id}
       `;
 
-      console.error(`❌ [FLOAT-TRANSFER] Transfer failed: ${reference}`, error);
+      console.error(`[FLOAT-TRANSFER] Transfer failed: ${reference}`, error);
       throw error;
     }
   }
@@ -141,7 +141,7 @@ export class FloatTransferService {
     `;
 
     console.log(
-      `🔄 [FLOAT-TRANSFER] Balances updated for transfer: ${transfer.reference}`
+      `[FLOAT-TRANSFER] Balances updated for transfer: ${transfer.reference}`
     );
   }
 
@@ -159,7 +159,7 @@ export class FloatTransferService {
         ["source", "destination", "fee", "revenue"]
       );
 
-      console.log(`✅ [FLOAT-TRANSFER] GL mappings ensured:`, mappings);
+      console.log(`[FLOAT-TRANSFER] GL mappings ensured:`, mappings);
 
       // Create reversal mappings
       await AutoGLMappingService.ensureReversalMappings(
@@ -208,7 +208,7 @@ export class FloatTransferService {
         `;
 
         console.log(
-          `✅ [FLOAT-TRANSFER] GL entries created: ${glResult.glTransactionId}`
+          `[FLOAT-TRANSFER] GL entries created: ${glResult.glTransactionId}`
         );
       } else {
         console.warn(
@@ -229,7 +229,7 @@ export class FloatTransferService {
     userId: string,
     branchId: string
   ): Promise<boolean> {
-    console.log(`🔄 [FLOAT-TRANSFER] Reversing transfer: ${transferId}`);
+    console.log(`[FLOAT-TRANSFER] Reversing transfer: ${transferId}`);
 
     const transfer = await this.getFloatTransfer(transferId);
     if (!transfer) {
@@ -268,15 +268,10 @@ export class FloatTransferService {
       // Create reversal GL entries
       await this.createReversalGLEntries(transfer, reason, userId, branchId);
 
-      console.log(
-        `✅ [FLOAT-TRANSFER] Transfer reversed: ${transfer.reference}`
-      );
+      console.log(`[FLOAT-TRANSFER] Transfer reversed: ${transfer.reference}`);
       return true;
     } catch (error) {
-      console.error(
-        `❌ [FLOAT-TRANSFER] Reversal failed: ${transferId}`,
-        error
-      );
+      console.error(`[FLOAT-TRANSFER] Reversal failed: ${transferId}`, error);
       throw error;
     }
   }
@@ -312,7 +307,7 @@ export class FloatTransferService {
 
       if (glResult.success) {
         console.log(
-          `✅ [FLOAT-TRANSFER] Reversal GL entries created: ${glResult.glTransactionId}`
+          `[FLOAT-TRANSFER] Reversal GL entries created: ${glResult.glTransactionId}`
         );
       }
     } catch (error) {

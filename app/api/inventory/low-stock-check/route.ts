@@ -4,7 +4,7 @@ import { NotificationService } from "@/lib/services/notification-service";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("🔍 [INVENTORY] Checking for low stock items...");
+    console.log("[INVENTORY] Checking for low stock items...");
 
     // Get system-wide low stock threshold (default 10%)
     const thresholdResult = await sql`
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
       lowStockThresholdPercentage: lowStockThreshold * 100,
     };
 
-    console.log(`✅ [INVENTORY] Stock check complete:`, {
+    console.log(`[INVENTORY] Stock check complete:`, {
       critical: outOfStockItems.length,
       low: lowStockItems.length,
       warning: warningItems.length,
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ [INVENTORY] Error checking low stock:", error);
+    console.error("[INVENTORY] Error checking low stock:", error);
     return NextResponse.json(
       {
         success: false,
@@ -223,17 +223,17 @@ export async function POST(request: NextRequest) {
 
         alertsSent++;
         console.log(
-          `✅ [INVENTORY] Alert sent to ${user.first_name} ${user.last_name}`
+          `[INVENTORY] Alert sent to ${user.first_name} ${user.last_name}`
         );
       } catch (error) {
         console.error(
-          `❌ [INVENTORY] Failed to send alert to user ${user.id}:`,
+          `[INVENTORY] Failed to send alert to user ${user.id}:`,
           error
         );
       }
     }
 
-    console.log(`✅ [INVENTORY] Sent ${alertsSent} low stock alerts`);
+    console.log(`[INVENTORY] Sent ${alertsSent} low stock alerts`);
 
     return NextResponse.json({
       success: true,
@@ -242,7 +242,7 @@ export async function POST(request: NextRequest) {
       itemsChecked: itemsToAlert.length,
     });
   } catch (error) {
-    console.error("❌ [INVENTORY] Error sending low stock alerts:", error);
+    console.error("[INVENTORY] Error sending low stock alerts:", error);
     return NextResponse.json(
       {
         success: false,

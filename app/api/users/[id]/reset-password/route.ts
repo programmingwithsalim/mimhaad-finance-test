@@ -55,7 +55,7 @@ export async function POST(
             </div>
           `,
         });
-        console.log(`✅ Password reset email sent to ${user.email}`);
+        console.log(`Password reset email sent to ${user.email}`);
       } catch (emailError) {
         console.error("Failed to send password reset email:", emailError);
         // Don't fail the request if email fails - password was still reset

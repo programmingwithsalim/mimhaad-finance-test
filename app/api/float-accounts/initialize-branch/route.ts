@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         initial_balance: 0,
       });
       createdAccounts.push(cashTillAccount);
-      console.log("✅ Created Cash in Till account");
+      console.log("Created Cash in Till account");
     } catch (error) {
       console.log("ℹ️ Cash in Till account already exists");
     }
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
           initial_balance: 0,
         });
         createdAccounts.push(powerAccount);
-        console.log(`✅ Created Power Float account for ${provider}`);
+        console.log(`Created Power Float account for ${provider}`);
       } catch (error) {
         console.log(`ℹ️ Power Float account for ${provider} already exists`);
       }
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
           initial_balance: 0,
         });
         createdAccounts.push(momoAccount);
-        console.log(`✅ Created MoMo Float account for ${provider}`);
+        console.log(`Created MoMo Float account for ${provider}`);
       } catch (error) {
         console.log(`ℹ️ MoMo Float account for ${provider} already exists`);
       }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
           initial_balance: 0,
         });
         createdAccounts.push(agencyAccount);
-        console.log(`✅ Created Agency Banking Float account for ${bank}`);
+        console.log(`Created Agency Banking Float account for ${bank}`);
       } catch (error) {
         console.log(
           `ℹ️ Agency Banking Float account for ${bank} already exists`
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         initial_balance: 0,
       });
       createdAccounts.push(ezwichAccount);
-      console.log("✅ Created E-Zwich Float account");
+      console.log("Created E-Zwich Float account");
     } catch (error) {
       console.log("ℹ️ E-Zwich Float account already exists");
     }
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
         initial_balance: 0,
       });
       createdAccounts.push(jumiaAccount);
-      console.log("✅ Created Jumia Float account");
+      console.log("Created Jumia Float account");
     } catch (error) {
       console.log("ℹ️ Jumia Float account already exists");
     }
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       accounts: allAccounts,
     });
   } catch (error) {
-    console.error("❌ [FLOAT] Error initializing float accounts:", error);
+    console.error("[FLOAT] Error initializing float accounts:", error);
     return NextResponse.json(
       {
         success: false,

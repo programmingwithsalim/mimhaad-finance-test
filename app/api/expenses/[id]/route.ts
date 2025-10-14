@@ -328,7 +328,7 @@ export async function PATCH(
                   }
 
                   console.log(
-                    `✅ Adjusted GL entries for expense edit - Amount difference: ${amountDifference}`
+                    `Adjusted GL entries for expense edit - Amount difference: ${amountDifference}`
                   );
                 }
               }
@@ -565,7 +565,7 @@ export async function DELETE(
               (gen_random_uuid(), ${glId}, ${apAccount.id}, ${apAccount.code}, ${expenseAmount}, 0, 'Accounts Payable reversed')
             `;
 
-            console.log(`✅ Reversed GL entries for deleted pending expense`);
+            console.log(`Reversed GL entries for deleted pending expense`);
           }
         }
       } catch (glError) {

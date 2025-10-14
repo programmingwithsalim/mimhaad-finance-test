@@ -153,9 +153,9 @@ export async function POST() {
           ON CONFLICT (config_key) DO NOTHING
         `;
       }
-      console.log("✅ Notification settings ensured in system_config");
+      console.log("Notification settings ensured in system_config");
     } catch (error) {
-      console.error("❌ Error ensuring notification settings:", error);
+      console.error("Error ensuring notification settings:", error);
     }
 
     // Seed GL mappings for float accounts

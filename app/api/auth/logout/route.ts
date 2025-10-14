@@ -3,7 +3,7 @@ import { deleteDatabaseSession } from "@/lib/database-session-service";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("🔄 Processing logout request");
+    console.log("Processing logout request");
 
     // Get session token from cookies
     const sessionToken = request.cookies.get("session_token")?.value;
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
       try {
         // Invalidate session in database using the proper service
         await deleteDatabaseSession(sessionToken);
-        console.log("✅ Session invalidated in database");
+        console.log("Session invalidated in database");
       } catch (dbError) {
         console.error("⚠️ Error invalidating session in database:", dbError);
         // Continue with logout even if DB update fails
@@ -42,10 +42,10 @@ export async function POST(request: NextRequest) {
       path: "/",
     });
 
-    console.log("✅ Logout successful, cookies cleared");
+    console.log("Logout successful, cookies cleared");
     return response;
   } catch (error) {
-    console.error("❌ Logout error:", error);
+    console.error("Logout error:", error);
 
     // Even if there's an error, clear cookies and return success
     const response = NextResponse.json({

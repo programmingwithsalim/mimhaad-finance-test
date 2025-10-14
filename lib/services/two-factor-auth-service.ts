@@ -168,11 +168,11 @@ export class TwoFactorAuthService {
         `;
       }
 
-      console.log(`✅ [2FA] Enabled for user ${userId} via ${method}`);
+      console.log(`[2FA] Enabled for user ${userId} via ${method}`);
 
       return { success: true, backupCodes };
     } catch (error) {
-      console.error("❌ [2FA] Error enabling 2FA:", error);
+      console.error("[2FA] Error enabling 2FA:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to enable 2FA",
@@ -198,11 +198,11 @@ export class TwoFactorAuthService {
         DELETE FROM user_2fa_tokens WHERE user_id = ${userId}
       `;
 
-      console.log(`✅ [2FA] Disabled for user ${userId}`);
+      console.log(`[2FA] Disabled for user ${userId}`);
 
       return { success: true };
     } catch (error) {
-      console.error("❌ [2FA] Error disabling 2FA:", error);
+      console.error("[2FA] Error disabling 2FA:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to disable 2FA",
@@ -238,7 +238,7 @@ export class TwoFactorAuthService {
         trustedDevices: [],
       };
     } catch (error) {
-      console.error("❌ [2FA] Error getting settings:", error);
+      console.error("[2FA] Error getting settings:", error);
       return null;
     }
   }
@@ -275,7 +275,7 @@ export class TwoFactorAuthService {
       if (settings.method === "sms" && settings.phoneNumber) {
         let phoneNumber = settings.phoneNumber;
 
-        // ✅ Normalize phone number to international format
+        // Normalize phone number to international format
         if (phoneNumber.startsWith("0")) {
           // Ghanaian number starting with 0 - convert to +233
           phoneNumber = "+233" + phoneNumber.substring(1);
@@ -337,7 +337,7 @@ export class TwoFactorAuthService {
             // Hubtel returns status 0 for success
             if (responseData.status !== 0) {
               console.error(
-                "❌ [2FA] Hubtel error:",
+                "[2FA] Hubtel error:",
                 responseData.statusDescription
               );
               throw new Error(
@@ -351,9 +351,9 @@ export class TwoFactorAuthService {
             console.warn("⚠️ [2FA] SMS provider not fully configured");
           }
 
-          console.log(`✅ [2FA] OTP sent via SMS to ${phoneNumber}`);
+          console.log(`[2FA] OTP sent via SMS to ${phoneNumber}`);
         } catch (smsError) {
-          console.error("❌ [2FA] Failed to send SMS:", smsError);
+          console.error("[2FA] Failed to send SMS:", smsError);
           return { success: false, error: "Failed to send OTP via SMS" };
         }
       } else if (settings.method === "email" && settings.email) {
@@ -378,12 +378,12 @@ export class TwoFactorAuthService {
           `,
         });
 
-        console.log(`✅ [2FA] OTP sent via email to ${settings.email}`);
+        console.log(`[2FA] OTP sent via email to ${settings.email}`);
       }
 
       return { success: true, expiresAt };
     } catch (error) {
-      console.error("❌ [2FA] Error sending OTP:", error);
+      console.error("[2FA] Error sending OTP:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to send OTP",
@@ -431,11 +431,11 @@ export class TwoFactorAuthService {
           AND id != ${result[0].id}
       `;
 
-      console.log(`✅ [2FA] OTP verified for user ${userId}`);
+      console.log(`[2FA] OTP verified for user ${userId}`);
 
       return { success: true };
     } catch (error) {
-      console.error("❌ [2FA] Error verifying OTP:", error);
+      console.error("[2FA] Error verifying OTP:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Failed to verify OTP",
@@ -473,12 +473,12 @@ export class TwoFactorAuthService {
       `;
 
       console.log(
-        `✅ [2FA] Backup code verified for user ${userId}. ${updatedCodes.length} codes remaining.`
+        `[2FA] Backup code verified for user ${userId}. ${updatedCodes.length} codes remaining.`
       );
 
       return { success: true };
     } catch (error) {
-      console.error("❌ [2FA] Error verifying backup code:", error);
+      console.error("[2FA] Error verifying backup code:", error);
       return {
         success: false,
         error:
@@ -512,11 +512,11 @@ export class TwoFactorAuthService {
           ip_address = ${ipAddress}
       `;
 
-      console.log(`✅ [2FA] Trusted device added for user ${userId}`);
+      console.log(`[2FA] Trusted device added for user ${userId}`);
 
       return { success: true };
     } catch (error) {
-      console.error("❌ [2FA] Error adding trusted device:", error);
+      console.error("[2FA] Error adding trusted device:", error);
       return {
         success: false,
         error:
@@ -543,7 +543,7 @@ export class TwoFactorAuthService {
 
       return result.length > 0;
     } catch (error) {
-      console.error("❌ [2FA] Error checking trusted device:", error);
+      console.error("[2FA] Error checking trusted device:", error);
       return false;
     }
   }
@@ -568,7 +568,7 @@ export class TwoFactorAuthService {
 
       return devices;
     } catch (error) {
-      console.error("❌ [2FA] Error getting trusted devices:", error);
+      console.error("[2FA] Error getting trusted devices:", error);
       return [];
     }
   }
@@ -586,11 +586,11 @@ export class TwoFactorAuthService {
         WHERE user_id = ${userId} AND device_id = ${deviceId}
       `;
 
-      console.log(`✅ [2FA] Trusted device removed for user ${userId}`);
+      console.log(`[2FA] Trusted device removed for user ${userId}`);
 
       return { success: true };
     } catch (error) {
-      console.error("❌ [2FA] Error removing trusted device:", error);
+      console.error("[2FA] Error removing trusted device:", error);
       return {
         success: false,
         error:
@@ -613,12 +613,17 @@ export class TwoFactorAuthService {
 
       // Not required if not enabled
       if (!settings || !settings.enabled) {
+        console.log(`[2FA] Not required - 2FA not enabled for user ${userId}`);
         return false;
       }
+
+      console.log(`[2FA] 2FA is enabled for user ${userId}, checking device trust...`);
+      console.log(`[2FA] Device ID: ${deviceId}`);
 
       // Check if device is trusted
       const isTrusted = await this.isDeviceTrusted(userId, deviceId);
       if (isTrusted) {
+        console.log(`[2FA] Device is TRUSTED - bypassing 2FA`);
         // Update last used
         await sql`
           UPDATE user_trusted_devices
@@ -628,9 +633,10 @@ export class TwoFactorAuthService {
         return false;
       }
 
+      console.log(`[2FA] Device is NOT TRUSTED - 2FA required`);
       return true;
     } catch (error) {
-      console.error("❌ [2FA] Error checking if 2FA required:", error);
+      console.error("[2FA] Error checking if 2FA required:", error);
       return false;
     }
   }
@@ -646,11 +652,11 @@ export class TwoFactorAuthService {
         RETURNING id
       `;
 
-      console.log(`✅ [2FA] Cleaned up ${result.length} expired tokens`);
+      console.log(`[2FA] Cleaned up ${result.length} expired tokens`);
 
       return result.length;
     } catch (error) {
-      console.error("❌ [2FA] Error cleaning up tokens:", error);
+      console.error("[2FA] Error cleaning up tokens:", error);
       return 0;
     }
   }

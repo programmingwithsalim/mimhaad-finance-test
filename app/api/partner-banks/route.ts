@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
-    console.log("🏦 Fetching partner banks with filters:", {
+    console.log("Fetching partner banks with filters:", {
       branchId,
       status,
       search,
@@ -120,14 +120,14 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    console.log("✅ Partner banks fetched successfully");
+    console.log("Partner banks fetched successfully");
 
     return NextResponse.json({
       success: true,
       data: result,
     });
   } catch (error) {
-    console.error("❌ Error fetching partner banks:", error);
+    console.error("Error fetching partner banks:", error);
     return NextResponse.json(
       {
         success: false,
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
       status = "active",
     } = body;
 
-    console.log("🏦 Creating partner bank:", {
+    console.log("Creating partner bank:", {
       bank_name,
       account_number,
       account_type,
@@ -204,14 +204,14 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `;
 
-    console.log("✅ Partner bank created successfully");
+    console.log("Partner bank created successfully");
 
     return NextResponse.json({
       success: true,
       data: newBank[0],
     });
   } catch (error) {
-    console.error("❌ Error creating partner bank:", error);
+    console.error("Error creating partner bank:", error);
     return NextResponse.json(
       {
         success: false,

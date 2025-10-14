@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export async function POST() {
   try {
-    console.log("🔄 Starting staff count update for all branches...");
+    console.log("Starting staff count update for all branches...");
 
     // First, check if user_branch_assignments table exists
     const tableExists = await sql`
@@ -19,7 +19,7 @@ export async function POST() {
 
     if (!tableExists[0]?.exists) {
       console.log(
-        "📋 user_branch_assignments table does not exist, creating it..."
+        "user_branch_assignments table does not exist, creating it..."
       );
 
       // Create the user_branch_assignments table
@@ -40,11 +40,11 @@ export async function POST() {
       await sql`CREATE INDEX IF NOT EXISTS idx_user_branch_assignments_branch_id ON user_branch_assignments(branch_id)`;
       await sql`CREATE INDEX IF NOT EXISTS idx_user_branch_assignments_primary ON user_branch_assignments(is_primary)`;
 
-      console.log("✅ user_branch_assignments table created successfully");
+      console.log("user_branch_assignments table created successfully");
     }
 
     // Ensure all active users are properly assigned to branches
-    console.log("🔍 Checking for users without branch assignments...");
+    console.log("Checking for users without branch assignments...");
 
     const usersWithoutAssignments = await sql`
       SELECT 
@@ -62,7 +62,7 @@ export async function POST() {
     `;
 
     console.log(
-      `📊 Found ${usersWithoutAssignments.length} users without branch assignments`
+      `Found ${usersWithoutAssignments.length} users without branch assignments`
     );
 
     // Check for users with no branch assignment at all
@@ -103,7 +103,7 @@ export async function POST() {
             VALUES (${user.id}, ${branchId}, true)
             ON CONFLICT (user_id, branch_id) DO NOTHING
           `;
-          console.log(`✅ Assigned user ${user.email} to branch ${branchId}`);
+          console.log(`Assigned user ${user.email} to branch ${branchId}`);
         } catch (error) {
           console.warn(
             `⚠️ Failed to assign user ${user.email} to branch ${branchId}:`,
@@ -143,7 +143,7 @@ export async function POST() {
     // Update staff count for each branch
     for (const branch of branches) {
       try {
-        console.log(`🔄 Updating staff count for branch: ${branch.name}`);
+        console.log(`Updating staff count for branch: ${branch.name}`);
 
         // Get current staff count
         const previousStaffCount = branch.staff_count || 0;
@@ -184,7 +184,7 @@ export async function POST() {
         });
 
         console.log(
-          `✅ Updated ${branch.name}: ${previousStaffCount} → ${newStaffCount} staff`
+          `Updated ${branch.name}: ${previousStaffCount} → ${newStaffCount} staff`
         );
 
         // Log staff details for debugging
@@ -203,7 +203,7 @@ export async function POST() {
           error instanceof Error ? error.message : "Unknown error"
         }`;
         results.errors.push(errorMessage);
-        console.error(`❌ ${errorMessage}`);
+        console.error(`${errorMessage}`);
       }
     }
 
@@ -216,7 +216,7 @@ export async function POST() {
       (sum, branch) => sum + branch.newStaffCount,
       0
     );
-    console.log(`📊 Total staff across all branches: ${totalStaff}`);
+    console.log(`Total staff across all branches: ${totalStaff}`);
 
     return NextResponse.json({
       success: true,
@@ -233,7 +233,7 @@ export async function POST() {
       usersWithNoBranch: usersWithNoBranch.length > 0 ? usersWithNoBranch : [],
     });
   } catch (error) {
-    console.error("❌ Error updating staff counts:", error);
+    console.error("Error updating staff counts:", error);
     return NextResponse.json(
       {
         success: false,

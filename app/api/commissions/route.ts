@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       requestData = Object.fromEntries(formData.entries());
       receiptFile = formData.get("receipt") as File;
 
-      console.log("📝 [COMMISSION] FormData received:", {
+      console.log("[COMMISSION] FormData received:", {
         ...requestData,
         receiptFile: receiptFile
           ? `${receiptFile.name} (${receiptFile.size} bytes)`
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     } else {
       requestData = await request.json();
       console.log(
-        "📝 [COMMISSION] JSON request data:",
+        "[COMMISSION] JSON request data:",
         JSON.stringify(requestData, null, 2)
       );
     }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     const branchName =
       request.headers.get("x-branch-name") || requestData.branchName;
 
-    console.log("📝 [COMMISSION] User context:", {
+    console.log("[COMMISSION] User context:", {
       userId,
       userName,
       userRole,
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     const { v4: uuidv4 } = await import("uuid");
     const commissionId = uuidv4();
 
-    console.log("📝 [COMMISSION] Creating commission with ID:", commissionId);
+    console.log("[COMMISSION] Creating commission with ID:", commissionId);
 
     // Log commission creation attempt
     await AuditLoggerService.log({
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
     );
 
     console.log(
-      "🏦 [COMMISSION] Creating commission with float account crediting..."
+      "[COMMISSION] Creating commission with float account crediting..."
     );
 
     const commissionInput = {
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
     );
 
     console.log(
-      "✅ [COMMISSION] Commission created:",
+      "[COMMISSION] Commission created:",
       commission.id,
       "Status:",
       commission.status || "pending"
@@ -223,7 +223,7 @@ export async function POST(request: Request) {
             `;
 
             console.log(
-              `✅ Created GL entries for pending commission - Debit: ${arAccount.name}, Credit: ${incomeAccount.name}`
+              `Created GL entries for pending commission - Debit: ${arAccount.name}, Credit: ${incomeAccount.name}`
             );
           }
         }
@@ -305,12 +305,9 @@ export async function POST(request: Request) {
           WHERE id = ${commission.id}
         `;
 
-        console.log("✅ [COMMISSION] Receipt file stored successfully");
+        console.log("[COMMISSION] Receipt file stored successfully");
       } catch (fileError) {
-        console.error(
-          "❌ [COMMISSION] Failed to store receipt file:",
-          fileError
-        );
+        console.error("[COMMISSION] Failed to store receipt file:", fileError);
         // Don't fail the commission creation if file upload fails
         await AuditLoggerService.log({
           userId,
@@ -340,7 +337,7 @@ export async function POST(request: Request) {
     }
 
     // Create GL entries for the commission
-    console.log("📊 [COMMISSION] Creating GL entries for commission...");
+    console.log("[COMMISSION] Creating GL entries for commission...");
 
     try {
       // Get the float account type to determine GL transaction type
@@ -374,7 +371,7 @@ export async function POST(request: Request) {
         }
       }
 
-      console.log(`📊 [COMMISSION] Using transaction type: ${transactionType}`);
+      console.log(`[COMMISSION] Using transaction type: ${transactionType}`);
 
       // Create GL entries for commission income
       await UnifiedGLPostingService.createCommissionGLEntries({
@@ -401,9 +398,9 @@ export async function POST(request: Request) {
         },
       });
 
-      console.log("✅ [COMMISSION] GL entries created successfully");
+      console.log("[COMMISSION] GL entries created successfully");
     } catch (glError) {
-      console.error("❌ [COMMISSION] Failed to create GL entries:", glError);
+      console.error("[COMMISSION] Failed to create GL entries:", glError);
 
       // Log the GL error but don't fail the commission creation
       // since the float account has already been credited
@@ -457,7 +454,7 @@ export async function POST(request: Request) {
       commission: formattedCommission,
     });
   } catch (error: any) {
-    console.error("❌ [COMMISSION] Error creating commission:", error);
+    console.error("[COMMISSION] Error creating commission:", error);
 
     // Log the error
     try {
@@ -481,10 +478,7 @@ export async function POST(request: Request) {
         });
       }
     } catch (auditError) {
-      console.error(
-        "❌ [COMMISSION] Failed to log error to audit:",
-        auditError
-      );
+      console.error("[COMMISSION] Failed to log error to audit:", auditError);
     }
 
     return NextResponse.json(
@@ -515,7 +509,7 @@ export async function GET(request: Request) {
       branchId || (userRole === "admin" ? null : userBranchId);
 
     console.log(
-      "📝 [COMMISSION] Executing query with branch filtering:",
+      "[COMMISSION] Executing query with branch filtering:",
       effectiveBranchId
     );
 
@@ -762,7 +756,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(commissions);
   } catch (error: any) {
-    console.error("❌ [COMMISSION] Error fetching commissions:", error);
+    console.error("[COMMISSION] Error fetching commissions:", error);
     return NextResponse.json(
       {
         error: error.message || "Failed to fetch commissions",

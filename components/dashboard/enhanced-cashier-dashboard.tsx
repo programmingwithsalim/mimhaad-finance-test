@@ -178,7 +178,7 @@ export function EnhancedCashierDashboard({
         );
         if (response.ok) {
           const data = await response.json();
-          console.log("📊 Float accounts fetched:", data);
+          console.log("Float accounts fetched:", data);
 
           const balances: any = {};
 
@@ -193,7 +193,7 @@ export function EnhancedCashierDashboard({
             };
           });
 
-          console.log("💰 Processed balances:", balances);
+          console.log("Processed balances:", balances);
           setFloatBalances(balances);
         } else {
           console.error("Failed to fetch float accounts:", response.status);

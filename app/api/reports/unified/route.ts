@@ -46,6 +46,10 @@ export async function GET(request: NextRequest) {
     const dateFilter =
       from && to ? sql`AND created_at::date BETWEEN ${from} AND ${to}` : sql``;
 
+    // Set default dates for depreciation calculation
+    const depreciationStartDate = from || "1900-01-01";
+    const depreciationEndDate = to || new Date().toISOString().split("T")[0];
+
     // Execute all queries in parallel for maximum performance
     const [
       agencyStats,
@@ -62,9 +66,10 @@ export async function GET(request: NextRequest) {
       inventoryResult,
       equityBalances,
       payablesResult,
+      jumiaFloatResult,
       overdraftResult,
-      settlementsResult,
       bankLoanResult,
+      depreciationResult,
     ] = await Promise.all([
       // Revenue queries
       sql`SELECT COUNT(*) as transactions, COALESCE(SUM(amount),0) as volume, COALESCE(SUM(fee),0) as fees FROM agency_banking_transactions WHERE status IN ('completed', 'disbursed') ${branchFilter} ${dateFilter}`,
@@ -86,8 +91,8 @@ export async function GET(request: NextRequest) {
         from && to ? sql`AND e.expense_date BETWEEN ${from} AND ${to}` : sql``
       } GROUP BY eh.category ORDER BY total_amount DESC`,
 
-      // Cash position
-      sql`SELECT COALESCE(SUM(current_balance),0) as total FROM float_accounts WHERE is_active = true ${branchFilter}`,
+      // Cash position (excluding Jumia - we don't own it)
+      sql`SELECT COALESCE(SUM(current_balance),0) as total FROM float_accounts WHERE is_active = true AND account_type != 'jumia' ${branchFilter}`,
 
       // Fixed assets
       sql`SELECT COALESCE(SUM(current_value), 0) as total_nbv, COALESCE(SUM(purchase_cost), 0) as total_cost, COUNT(*) as total_assets FROM fixed_assets WHERE status = 'active' ${
@@ -96,8 +101,8 @@ export async function GET(request: NextRequest) {
           : sql``
       }`,
 
-      // Accounts receivable
-      sql`SELECT COALESCE(SUM(amount), 0) as total FROM commissions WHERE status IN ('pending') ${branchFilter} ${dateFilter}`,
+      // Accounts receivable (pending/approved commissions - money owed to agents)
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM commissions WHERE status IN ('pending', 'approved') ${branchFilter} ${dateFilter}`,
 
       // Closing inventory
       sql`SELECT COALESCE(SUM(quantity_available * unit_cost), 0) as total FROM ezwich_card_batches WHERE quantity_available > 0 ${branchFilter}`,
@@ -111,19 +116,53 @@ export async function GET(request: NextRequest) {
         from && to ? sql`AND transaction_date <= ${to}` : sql``
       } GROUP BY ledger_type`,
 
-      // Accounts payable
+      // Accounts payable (expenses)
       sql`SELECT COALESCE(SUM(amount), 0) as total FROM expenses WHERE status = 'pending' ${branchFilter} ${
         from && to ? sql`AND expense_date BETWEEN ${from} AND ${to}` : sql``
       }`,
 
+      // Jumia Float (money held for Jumia - it's a liability)
+      sql`SELECT COALESCE(SUM(ABS(current_balance)), 0) as total FROM float_accounts WHERE is_active = true AND account_type = 'jumia' ${branchFilter}`,
+
       // Bank overdraft
       sql`SELECT COALESCE(SUM(ABS(current_balance)), 0) as total FROM float_accounts WHERE is_active = true AND current_balance < 0 AND account_type IN ('agency-banking') ${branchFilter}`,
 
-      // Settlement arrears
-      sql`SELECT COALESCE(SUM(ABS(current_balance)), 0) as total FROM float_accounts WHERE is_active = true AND current_balance < 0 AND account_type = 'jumia' ${branchFilter}`,
-
       // Bank loan
       sql`SELECT COALESCE(value, '0') as value FROM system_settings WHERE key = 'bank_loan' LIMIT 1`,
+
+      // Depreciation (calculate for the period) - with details
+      sql`
+        SELECT 
+          COALESCE(SUM(period_dep), 0) as period_depreciation,
+          COUNT(*) as asset_count,
+          COALESCE(SUM(annual_dep), 0) as total_annual_depreciation
+        FROM (
+          SELECT 
+            name,
+            purchase_cost,
+            salvage_value,
+            useful_life,
+            purchase_date,
+            ((purchase_cost - COALESCE(salvage_value, 0)) / NULLIF(useful_life, 0)) as annual_dep,
+            CASE 
+              -- If asset was purchased during the period, calculate from purchase date to end of period
+              WHEN purchase_date::date >= ${depreciationStartDate}::date 
+                THEN ((purchase_cost - COALESCE(salvage_value, 0)) / NULLIF(useful_life, 0)) 
+                     * (EXTRACT(EPOCH FROM AGE(${depreciationEndDate}::date, purchase_date::date)) / (365.0 * 86400))
+              -- If asset existed before period, calculate for full period
+              ELSE ((purchase_cost - COALESCE(salvage_value, 0)) / NULLIF(useful_life, 0)) 
+                   * (EXTRACT(EPOCH FROM AGE(${depreciationEndDate}::date, ${depreciationStartDate}::date)) / (365.0 * 86400))
+            END as period_dep
+          FROM fixed_assets 
+          WHERE status = 'active'
+            AND purchase_date::date <= ${depreciationEndDate}::date
+            ${
+              effectiveBranchId && effectiveBranchId !== "all"
+                ? sql`AND branch_id = ${effectiveBranchId}`
+                : sql``
+            }
+        ) asset_depreciation
+      `,
     ]);
 
     // Calculate revenue and expenses
@@ -137,13 +176,16 @@ export async function GET(request: NextRequest) {
       agencyFees + momoFees + ezwichFees + powerFees + jumiaFees;
 
     const totalCommissions = Number(commissionsResult[0].total) || 0;
-    const totalRevenue = totalServiceFees + totalCommissions;
+    // Revenue = Service fees ONLY (commissions are expenses, not revenue!)
+    const totalRevenue = totalServiceFees;
     const totalExpenses = Number(expensesResult[0].total) || 0;
-    const netIncome = totalRevenue - totalExpenses;
+    // Net Income = Revenue - Commissions - Expenses
+    const netIncome = totalRevenue - totalCommissions - totalExpenses;
     const cashPosition = Number(cashResult[0].total) || 0;
+    const depreciation = Number(depreciationResult[0].period_depreciation) || 0;
 
     // Enhanced logging for debugging
-    devLog.info("📊 Unified Reports - Fee Breakdown:", {
+    devLog.info("Unified Reports - Fee Breakdown:", {
       agencyFees: `GHS ${agencyFees.toFixed(2)} (${Number(
         agencyStats[0].transactions
       )} txns)`,
@@ -265,7 +307,7 @@ export async function GET(request: NextRequest) {
         equityBalances.find((b) => b.ledger_type === "other_fund")?.balance
       ) || 0;
 
-    devLog.info("💰 Equity Balances:", {
+    devLog.info("Equity Balances:", {
       shareCapital: `GHS ${shareCapital.toFixed(2)}`,
       retainedEarnings: `GHS ${retainedEarnings.toFixed(2)}`,
       otherFund: `GHS ${otherFund.toFixed(2)}`,
@@ -273,12 +315,13 @@ export async function GET(request: NextRequest) {
       note:
         equityBalances.length === 0
           ? "⚠️ No equity transactions found - table may not exist"
-          : "✅ Equity data loaded",
+          : "Equity data loaded",
     });
 
-    const accountsPayable = Number(payablesResult[0].total) || 0;
+    const accountsPayable =
+      (Number(payablesResult[0].total) || 0) +
+      (Number(jumiaFloatResult[0].total) || 0); // Includes expenses + Jumia float
     const bankOverdraft = Number(overdraftResult[0].total) || 0;
-    const settlementsArrears = Number(settlementsResult[0].total) || 0;
     const bankLoan = Number(bankLoanResult[0]?.value) || 0;
 
     const totalNonCurrentAssets = fixedAssetsNBV;
@@ -293,8 +336,7 @@ export async function GET(request: NextRequest) {
       Number(otherFund) +
       profitForTheYear;
 
-    const totalCurrentLiabilities =
-      accountsPayable + bankOverdraft + settlementsArrears;
+    const totalCurrentLiabilities = accountsPayable + bankOverdraft;
     const totalNonCurrentLiabilities = bankLoan;
     const totalLiabilities =
       totalCurrentLiabilities + totalNonCurrentLiabilities;
@@ -305,18 +347,19 @@ export async function GET(request: NextRequest) {
 
     // Gross profit and net profit
     const grossProfit = totalRevenue - totalExpenses;
-    const netProfit = grossProfit + totalCommissions;
+    // Net Profit = Gross Profit - Commissions (commissions are deductions!)
+    const netProfit = grossProfit - totalCommissions;
 
-    devLog.info("📋 Balance Sheet Summary:", {
+    devLog.info("Balance Sheet Summary:", {
       totalAssets: `GHS ${totalAssets.toFixed(2)}`,
       totalLiabilities: `GHS ${totalLiabilities.toFixed(2)}`,
       totalEquity: `GHS ${totalEquity.toFixed(2)}`,
       totalEquityAndLiabilities: `GHS ${totalEquityAndLiabilities.toFixed(2)}`,
       difference: `GHS ${(totalAssets - totalEquityAndLiabilities).toFixed(2)}`,
-      balanceCheck: balanceCheck ? "✅ Balanced" : "❌ Unbalanced",
+      balanceCheck: balanceCheck ? "Balanced" : "Unbalanced",
     });
 
-    devLog.info("📊 Profit & Loss Summary:", {
+    devLog.info("Profit & Loss Summary:", {
       grossProfit: `GHS ${grossProfit.toFixed(2)}`,
       netProfit: `GHS ${netProfit.toFixed(2)}`,
       profitMargin: `${((netProfit / (totalRevenue || 1)) * 100).toFixed(2)}%`,
@@ -374,7 +417,7 @@ export async function GET(request: NextRequest) {
             current: {
               accountsPayable: { note: 8, value: accountsPayable },
               bankOverdraft: { note: 9, value: bankOverdraft },
-              settlementsArrears: { note: 10, value: settlementsArrears },
+              // settlementsArrears removed - Jumia float now in accountsPayable
               total: totalCurrentLiabilities,
             },
             nonCurrent: {
@@ -464,11 +507,11 @@ export async function GET(request: NextRequest) {
           period: { from, to },
           operatingActivities: {
             netIncome,
-            depreciation: 0,
+            depreciation: depreciation,
             accountsReceivable: -accountsReceivable,
             accountsPayable: accountsPayable,
             netCashFromOperations:
-              netIncome + accountsPayable - accountsReceivable,
+              netIncome + depreciation + accountsPayable - accountsReceivable,
           },
           investingActivities: {
             purchaseOfFixedAssets: 0,
@@ -481,6 +524,7 @@ export async function GET(request: NextRequest) {
           summary: {
             netChangeInCash:
               netIncome +
+              depreciation +
               accountsPayable -
               accountsReceivable -
               totalCommissions,

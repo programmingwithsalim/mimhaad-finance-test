@@ -145,7 +145,7 @@ export function PowerTransactionForm({
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ [POWER] API Error:", errorText);
+        console.error("[POWER] API Error:", errorText);
         throw new Error(
           `Transaction failed: ${response.status} ${response.statusText}`
         );
@@ -172,7 +172,7 @@ export function PowerTransactionForm({
         throw new Error(result.error || "Failed to process power transaction");
       }
     } catch (error: any) {
-      console.error("❌ [POWER] Transaction error:", error);
+      console.error("[POWER] Transaction error:", error);
       toast({
         title: "Error",
         description: error?.message || "Something went wrong",

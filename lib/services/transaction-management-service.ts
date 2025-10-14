@@ -665,7 +665,7 @@ export class TransactionManagementService {
   ) {
     try {
       console.log(
-        `🔍 [FLOAT] Looking for float account for ${sourceModule} transaction:`,
+        `[FLOAT] Looking for float account for ${sourceModule} transaction:`,
         {
           id: transaction.id,
           float_account_id: transaction.float_account_id,
@@ -689,7 +689,7 @@ export class TransactionManagementService {
         );
         if (defaultAccount) {
           console.log(
-            `✅ [FLOAT] Using default float account:`,
+            `[FLOAT] Using default float account:`,
             defaultAccount.id
           );
           return defaultAccount;
@@ -704,15 +704,15 @@ export class TransactionManagementService {
 
       if (result.length === 0) {
         console.log(
-          `❌ [FLOAT] Float account not found for ID: ${floatAccountId}`
+          `[FLOAT] Float account not found for ID: ${floatAccountId}`
         );
         return null;
       }
 
-      console.log(`✅ [FLOAT] Found float account:`, result[0].id);
+      console.log(`[FLOAT] Found float account:`, result[0].id);
       return result[0];
     } catch (error) {
-      console.error("❌ [FLOAT] Error getting float account:", error);
+      console.error("[FLOAT] Error getting float account:", error);
       return null;
     }
   }

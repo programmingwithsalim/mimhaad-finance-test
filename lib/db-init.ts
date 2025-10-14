@@ -224,7 +224,7 @@ async function initializeCommissionTables() {
       month DATE NOT NULL,
       reference VARCHAR(255) NOT NULL UNIQUE,
       description TEXT,
-      status VARCHAR(20) NOT NULL DEFAULT 'paid' CHECK (status IN ('pending', 'paid')),
+      status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'paid')),
       gl_account VARCHAR(20),
       gl_account_name VARCHAR(255),
       branch_id UUID REFERENCES branches(id),
@@ -234,7 +234,11 @@ async function initializeCommissionTables() {
       created_by UUID NOT NULL,
       created_by_name VARCHAR(255) NOT NULL,
       updated_by UUID,
-      updated_by_name VARCHAR(255)
+      updated_by_name VARCHAR(255),
+      approved_by UUID,
+      approved_by_name VARCHAR(255),
+      approved_at TIMESTAMP WITH TIME ZONE,
+      approval_comments TEXT
     )
   `;
 }

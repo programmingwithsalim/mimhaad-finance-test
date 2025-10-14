@@ -141,18 +141,18 @@ export function CommissionDashboard() {
 
   const handleAddCommission = async () => {
     try {
-      console.log("🔄 [COMMISSION] Refreshing commission data...");
+      console.log("[COMMISSION] Refreshing commission data...");
       // The commission form already handles the API call, so we just need to refresh the data
       await refreshCommissions();
-      console.log("✅ [COMMISSION] Commission data refreshed successfully");
+      console.log("[COMMISSION] Commission data refreshed successfully");
       setShowAddDialog(false);
       toast({
         title: "Commission Added",
         description: "Commission has been successfully created.",
       });
     } catch (error) {
-      console.error("❌ [COMMISSION] Error in handleAddCommission:", error);
-      console.error("❌ [COMMISSION] Error details:", {
+      console.error("[COMMISSION] Error in handleAddCommission:", error);
+      console.error("[COMMISSION] Error details:", {
         message: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : "No stack trace",
       });
@@ -167,11 +167,11 @@ export function CommissionDashboard() {
 
   const handleRefresh = async () => {
     try {
-      console.log("🔄 [COMMISSION] Refreshing commission data from table...");
+      console.log("[COMMISSION] Refreshing commission data from table...");
       await refreshCommissions();
-      console.log("✅ [COMMISSION] Commission data refreshed successfully");
+      console.log("[COMMISSION] Commission data refreshed successfully");
     } catch (error) {
-      console.error("❌ [COMMISSION] Error refreshing commissions:", error);
+      console.error("[COMMISSION] Error refreshing commissions:", error);
       toast({
         title: "Error",
         description: "Failed to refresh commission data",

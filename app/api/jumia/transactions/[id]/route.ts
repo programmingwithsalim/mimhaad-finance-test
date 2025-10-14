@@ -9,7 +9,7 @@ import { getCurrentUser } from "@/lib/auth-utils";
 // GET - Get specific transaction
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string  }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: transactionId } = await params;
@@ -28,7 +28,10 @@ export async function GET(
     console.log("Found transaction:", transaction);
     return NextResponse.json({
       success: true,
-      data: { ...transaction, payment_method: transaction.payment_method || null },
+      data: {
+        ...transaction,
+        payment_method: transaction.payment_method || null,
+      },
     });
   } catch (error) {
     console.error("Error getting Jumia transaction:", error);
@@ -46,7 +49,7 @@ export async function GET(
 // PUT - Update transaction
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string  }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: transactionId } = await params;
@@ -127,7 +130,7 @@ export async function PUT(
 // DELETE - Delete transaction
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string  }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id: transactionId } = await params;
@@ -146,7 +149,7 @@ export async function DELETE(
 
     const deletedTransaction = await deleteJumiaTransaction(transactionId);
 
-    console.log("✅ Deleted transaction successfully:", deletedTransaction);
+    console.log("Deleted transaction successfully:", deletedTransaction);
     return NextResponse.json({
       success: true,
       message: `Transaction deleted successfully. Reason: ${reason}`,

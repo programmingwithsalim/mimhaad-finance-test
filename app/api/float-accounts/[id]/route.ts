@@ -243,12 +243,10 @@ export async function PUT(
           currentAccount.branch_id,
           `Balance adjustment: ${reason}`
         );
-        console.log(
-          "✅ [FLOAT-EDIT] GL entries created for balance adjustment"
-        );
+        console.log("[FLOAT-EDIT] GL entries created for balance adjustment");
       } catch (glError) {
         console.error(
-          "❌ [FLOAT-EDIT] Failed to create GL entries for balance adjustment:",
+          "[FLOAT-EDIT] Failed to create GL entries for balance adjustment:",
           glError
         );
         // Don't fail the entire operation for GL entry issues

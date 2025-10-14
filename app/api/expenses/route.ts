@@ -8,7 +8,6 @@ const sql = neon(process.env.DATABASE_URL!);
 export async function GET(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser(request);
-    console.log("Current user for expenses API:", currentUser);
 
     const { searchParams } = new URL(request.url);
     const requestedBranchId = searchParams.get("branchId");
@@ -22,19 +21,12 @@ export async function GET(request: NextRequest) {
     if (currentUser.role !== "admin") {
       // Non-admin users can only see their own branch
       effectiveBranchId = currentUser.branchId;
-      console.log(
-        `Non-admin user ${currentUser.name} (${currentUser.role}) - filtering by their branch: ${effectiveBranchId}`
-      );
     } else if (requestedBranchId) {
       // Admin users can see specific branch if requested
       effectiveBranchId = requestedBranchId;
-      console.log(
-        `Admin user ${currentUser.name} - viewing specific branch: ${effectiveBranchId}`
-      );
     } else {
       // Admin users without specific branch request see all branches
       effectiveBranchId = null;
-      console.log(`Admin user ${currentUser.name} - viewing all branches`);
     }
 
     // Get expenses with expense head information
@@ -186,7 +178,6 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const currentUser = await getCurrentUser(request);
-    console.log("Current user for expense creation:", currentUser);
 
     const body = await request.json();
     const {
@@ -243,9 +234,6 @@ export async function POST(request: NextRequest) {
     // If user is not admin, enforce their branch
     if (currentUser.role !== "admin") {
       effectiveBranchId = currentUser.branchId;
-      console.log(
-        `Non-admin user ${currentUser.name} - using their branch: ${effectiveBranchId}`
-      );
     } else if (!branch_id) {
       // Admin must specify a branch
       return NextResponse.json(
@@ -376,17 +364,9 @@ export async function POST(request: NextRequest) {
             (gen_random_uuid(), ${glId}, ${expenseAccount.id}, ${expenseAccount.code}, ${amount}, 0, 'Expense recognized'),
             (gen_random_uuid(), ${glId}, ${apAccount.id}, ${apAccount.code}, 0, ${amount}, 'Accounts Payable - pending expense')
           `;
-
-          console.log(
-            `✅ Created GL entries for pending expense - Debit: ${expenseAccount.name}, Credit: ${apAccount.name}`
-          );
         }
       }
     } catch (glError) {
-      console.error(
-        "Failed to create GL entries for pending expense:",
-        glError
-      );
       // Don't fail the expense creation if GL posting fails
     }
 
@@ -396,7 +376,6 @@ export async function POST(request: NextRequest) {
       message: "Expense created successfully and added to Accounts Payable",
     });
   } catch (error) {
-    console.error("Error creating expense:", error);
     return NextResponse.json(
       {
         success: false,

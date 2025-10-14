@@ -122,7 +122,7 @@ export async function POST() {
       },
     });
   } catch (error) {
-    console.error("❌ Error testing staff counts:", error);
+    console.error("Error testing staff counts:", error);
     return NextResponse.json(
       {
         success: false,

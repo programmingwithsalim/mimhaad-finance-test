@@ -157,7 +157,7 @@ export function PowerTransactionModal({
         floatAccountId: data.floatAccountId,
       };
 
-      console.log("🔄 [POWER] Submitting transaction:", transactionData);
+      console.log("[POWER] Submitting transaction:", transactionData);
 
       const response = await fetch("/api/power/transactions", {
         method: "POST",

@@ -258,7 +258,7 @@ export async function POST(
           `;
 
           console.log(
-            `✅ Created payment GL entries - Debit: ${apAccount.name}, Credit: ${paymentSourceAccount.name}`
+            `Created payment GL entries - Debit: ${apAccount.name}, Credit: ${paymentSourceAccount.name}`
           );
         }
       }

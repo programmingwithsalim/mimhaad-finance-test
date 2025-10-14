@@ -27,11 +27,10 @@ export async function POST(request: NextRequest) {
       message: "2FA disabled successfully",
     });
   } catch (error) {
-    console.error("❌ [2FA] Error disabling 2FA:", error);
+    console.error("[2FA] Error disabling 2FA:", error);
     return NextResponse.json(
       { success: false, error: "Failed to disable 2FA" },
       { status: 500 }
     );
   }
 }
-

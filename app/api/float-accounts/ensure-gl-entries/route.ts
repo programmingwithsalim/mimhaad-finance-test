@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(
-      "🔷 [ENSURE-GL-ENTRIES] Starting GL entries verification for all float accounts..."
+      "[ENSURE-GL-ENTRIES] Starting GL entries verification for all float accounts..."
     );
 
     // Get all float accounts
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     `;
 
     console.log(
-      `🔷 [ENSURE-GL-ENTRIES] Found ${floatAccounts.length} float accounts to check`
+      `[ENSURE-GL-ENTRIES] Found ${floatAccounts.length} float accounts to check`
     );
 
     const results = {
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     for (const account of floatAccounts) {
       try {
         console.log(
-          `🔍 [ENSURE-GL-ENTRIES] Processing account: ${account.id} (${account.account_type})`
+          `[ENSURE-GL-ENTRIES] Processing account: ${account.id} (${account.account_type})`
         );
 
         // Check if GL entries exist for this account
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
           if (glResult.success) {
             console.log(
-              `✅ [ENSURE-GL-ENTRIES] Created GL entries for account ${account.id}`
+              `[ENSURE-GL-ENTRIES] Created GL entries for account ${account.id}`
             );
             results.createdEntries++;
             results.details.push({
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
             });
           } else {
             console.error(
-              `❌ [ENSURE-GL-ENTRIES] Failed to create GL entries for account ${account.id}:`,
+              `[ENSURE-GL-ENTRIES] Failed to create GL entries for account ${account.id}:`,
               glResult.error
             );
             results.errors.push(
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
         results.processedAccounts++;
       } catch (error) {
         console.error(
-          `❌ [ENSURE-GL-ENTRIES] Error processing account ${account.id}:`,
+          `[ENSURE-GL-ENTRIES] Error processing account ${account.id}:`,
           error
         );
         results.errors.push(
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`✅ [ENSURE-GL-ENTRIES] Completed GL entries verification:`, {
+    console.log(`[ENSURE-GL-ENTRIES] Completed GL entries verification:`, {
       totalAccounts: results.totalAccounts,
       processedAccounts: results.processedAccounts,
       createdEntries: results.createdEntries,
@@ -157,7 +157,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("❌ [ENSURE-GL-ENTRIES] Error:", error);
+    console.error("[ENSURE-GL-ENTRIES] Error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -313,7 +313,7 @@ export async function GET(request: NextRequest) {
       });
     }
   } catch (error) {
-    console.error("❌ [ENSURE-GL-ENTRIES] Error:", error);
+    console.error("[ENSURE-GL-ENTRIES] Error:", error);
     return NextResponse.json(
       {
         success: false,

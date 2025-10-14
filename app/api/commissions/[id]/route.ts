@@ -504,7 +504,7 @@ export async function DELETE(
           AND branch_id = ${user.branchId}
           AND is_active = true
       `;
-      console.log(`🔷 [GL] All mappings for ${transactionType}:`, allMappings);
+      console.log(`[GL] All mappings for ${transactionType}:`, allMappings);
 
       // Use the unified GL posting service for commission reversal
       const glResult =

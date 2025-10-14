@@ -55,21 +55,22 @@ export async function GET(request: Request) {
     const totalNonCurrentAssets = fixedAssetsNBV;
 
     // 2. CURRENT ASSETS
-    // Cash and Cash Equivalents (Positive balances only)
+    // Cash and Cash Equivalents (Positive balances only, EXCLUDING Jumia - we don't own it)
     const cashResult = await sql`
       SELECT COALESCE(SUM(current_balance), 0) as total_cash
       FROM float_accounts 
       WHERE is_active = true 
         AND current_balance > 0
+        AND account_type != 'jumia'
         ${branchFilter}
     `;
     const cashAndCashEquivalents = Number(cashResult[0].total_cash) || 0;
 
-    // Accounts Receivable (Unapproved/Pending Commissions)
+    // Accounts Receivable (Pending/Unapproved Commissions - money owed to agents)
     const receivablesResult = await sql`
       SELECT COALESCE(SUM(amount), 0) as total_receivables
       FROM commissions 
-      WHERE status IN ('pending') ${
+      WHERE status IN ('pending', 'approved') ${
         effectiveBranchId && effectiveBranchId !== "all"
           ? sql`AND branch_id = ${effectiveBranchId}`
           : sql``
@@ -181,7 +182,8 @@ export async function GET(request: Request) {
     `;
     const totalCommissions =
       Number(commissionsResult[0].total_commissions) || 0;
-    const totalRevenue = totalFees + totalCommissions;
+    // Revenue = Service fees ONLY (commissions are expenses, not revenue!)
+    const totalRevenue = totalFees;
 
     // Total Expenses (Approved expenses only)
     const expensesResult = await sql`
@@ -195,12 +197,13 @@ export async function GET(request: Request) {
     `;
     const totalExpenses = Number(expensesResult[0].total_expenses) || 0;
 
-    const profitForTheYear = totalRevenue - totalExpenses;
+    // Profit for the Year = Revenue - Commissions - Expenses
+    const profitForTheYear = totalRevenue - totalCommissions - totalExpenses;
     const totalEquity =
       shareCapital + retainedEarnings + otherFund + profitForTheYear;
 
     // 2. CURRENT LIABILITIES
-    // Accounts Payable (Pending/Unapproved Expenses)
+    // Accounts Payable (Pending/Unapproved Expenses + Jumia Float)
     const payablesResult = await sql`
       SELECT COALESCE(SUM(amount), 0) as total_payables
       FROM expenses 
@@ -210,7 +213,19 @@ export async function GET(request: Request) {
           : sql``
       } ${dateFilter}
     `;
-    const accountsPayable = Number(payablesResult[0].total_payables) || 0;
+
+    // Jumia Float (money held on behalf of Jumia - it's a liability, not our asset)
+    const jumiaFloatResult = await sql`
+      SELECT COALESCE(SUM(ABS(current_balance)), 0) as total_jumia_float
+      FROM float_accounts 
+      WHERE is_active = true 
+        AND account_type = 'jumia'
+        ${branchFilter}
+    `;
+
+    const accountsPayable =
+      (Number(payablesResult[0].total_payables) || 0) +
+      (Number(jumiaFloatResult[0].total_jumia_float) || 0);
 
     // Bank Overdraft (Negative bank float balances)
     const overdraftResult = await sql`
@@ -223,19 +238,10 @@ export async function GET(request: Request) {
     `;
     const bankOverdraft = Number(overdraftResult[0].total_overdraft) || 0;
 
-    // Settlement Arrears (Negative Jumia float balance)
-    const settlementsResult = await sql`
-      SELECT COALESCE(SUM(ABS(current_balance)), 0) as total_arrears
-      FROM float_accounts 
-      WHERE is_active = true 
-        AND current_balance < 0
-        AND account_type = 'jumia'
-        ${branchFilter}
-    `;
-    const settlementsArrears = Number(settlementsResult[0].total_arrears) || 0;
+    // Note: Jumia Float is now included in Accounts Payable (all amounts, positive or negative)
+    // Settlement Arrears removed to avoid double-counting
 
-    const totalCurrentLiabilities =
-      accountsPayable + bankOverdraft + settlementsArrears;
+    const totalCurrentLiabilities = accountsPayable + bankOverdraft;
 
     // 3. NON-CURRENT LIABILITIES
     // Bank Loan (from system settings or negative long-term liability accounts)
@@ -294,7 +300,7 @@ export async function GET(request: Request) {
           current: {
             accountsPayable: { note: 8, value: accountsPayable },
             bankOverdraft: { note: 9, value: bankOverdraft },
-            settlementsArrears: { note: 10, value: settlementsArrears },
+            // settlementsArrears removed - Jumia float now in accountsPayable
             total: totalCurrentLiabilities,
           },
           nonCurrent: {

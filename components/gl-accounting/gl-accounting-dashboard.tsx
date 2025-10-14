@@ -152,7 +152,7 @@ export function GLAccountingDashboard({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  📅 Date Range
+                  Date Range
                 </label>
                 <div className="p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <DateRangePicker
@@ -163,7 +163,7 @@ export function GLAccountingDashboard({
               </div>
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  🏦 Account Filter
+                  Account Filter
                 </label>
                 <div className="p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <AccountFilter
@@ -175,7 +175,7 @@ export function GLAccountingDashboard({
               </div>
               <div className="space-y-3">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                  📊 Transaction Type
+                  Transaction Type
                 </label>
                 <div className="p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
                   <TransactionTypeFilter
@@ -200,7 +200,7 @@ export function GLAccountingDashboard({
             variant="outline"
             className="bg-blue-50 text-blue-700 border-blue-200"
           >
-            📅 {dateRange.from?.toLocaleDateString()} -{" "}
+            {dateRange.from?.toLocaleDateString()} -{" "}
             {dateRange.to?.toLocaleDateString()}
           </Badge>
           {selectedAccount && (
@@ -208,7 +208,7 @@ export function GLAccountingDashboard({
               variant="outline"
               className="bg-green-50 text-green-700 border-green-200"
             >
-              🏦 Account: {selectedAccount}
+              Account: {selectedAccount}
             </Badge>
           )}
           {selectedTransactionType && (
@@ -216,7 +216,7 @@ export function GLAccountingDashboard({
               variant="outline"
               className="bg-purple-50 text-purple-700 border-purple-200"
             >
-              📊 Type: {selectedTransactionType}
+              Type: {selectedTransactionType}
             </Badge>
           )}
           <div className="ml-auto">

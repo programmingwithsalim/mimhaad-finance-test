@@ -60,7 +60,7 @@ export async function createPowerSale(
   data: CreatePowerSaleData
 ): Promise<PowerTransaction> {
   try {
-    console.log("🔄 [POWER] Creating power sale:", data);
+    console.log("[POWER] Creating power sale:", data);
 
     // Ensure table exists
     await ensurePowerTransactionsTable();
@@ -97,7 +97,7 @@ export async function createPowerSale(
 
     const transaction = result[0];
 
-    console.log("✅ [POWER] Power sale created successfully:", transaction.id);
+    console.log("[POWER] Power sale created successfully:", transaction.id);
 
     if (data.customerPhone) {
       await NotificationService.sendNotification({
@@ -134,7 +134,7 @@ export async function createPowerSale(
       type: transaction.type,
     };
   } catch (error) {
-    console.error("❌ [POWER] Error creating power sale:", error);
+    console.error("[POWER] Error creating power sale:", error);
     throw error;
   }
 }
@@ -149,10 +149,7 @@ export async function getPowerTransactions(filters: {
   offset?: number;
 }): Promise<PowerTransaction[]> {
   try {
-    console.log(
-      "🔍 [POWER] Fetching power transactions with filters:",
-      filters
-    );
+    console.log("[POWER] Fetching power transactions with filters:", filters);
 
     // Ensure table exists
     await ensurePowerTransactionsTable();
@@ -212,14 +209,14 @@ export async function getPowerTransactions(filters: {
     const result = await query;
 
     console.log(
-      `✅ [POWER] Found ${
+      `[POWER] Found ${
         Array.isArray(result) ? result.length : 0
       } power transactions`
     );
 
     // Ensure result is an array
     if (!Array.isArray(result)) {
-      console.error("❌ [POWER] Query result is not an array:", typeof result);
+      console.error("[POWER] Query result is not an array:", typeof result);
       return [];
     }
 
@@ -238,7 +235,7 @@ export async function getPowerTransactions(filters: {
       type: row.type,
     }));
   } catch (error) {
-    console.error("❌ [POWER] Error fetching power transactions:", error);
+    console.error("[POWER] Error fetching power transactions:", error);
     return [];
   }
 }

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const transactionType = searchParams.get("transactionType");
     const mappingType = searchParams.get("mappingType");
 
-    console.log("🔍 [GL MAPPINGS] Fetching mappings:", {
+    console.log("[GL MAPPINGS] Fetching mappings:", {
       groupBy,
       floatAccountId,
       transactionType,
@@ -104,7 +104,7 @@ export async function GET(request: NextRequest) {
 
     const mappings = await query;
 
-    console.log(`🔍 [GL MAPPINGS] Found ${mappings.length} mappings`);
+    console.log(`[GL MAPPINGS] Found ${mappings.length} mappings`);
 
     return NextResponse.json({
       success: true,

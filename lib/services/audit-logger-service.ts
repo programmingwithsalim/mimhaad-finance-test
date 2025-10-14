@@ -1,88 +1,89 @@
-import { neon } from "@neondatabase/serverless"
+import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(process.env.DATABASE_URL!);
 
 export interface AuditLogData {
-  userId: string
-  username: string
-  actionType: string
-  entityType: string
-  entityId?: string
-  description: string
-  details?: any
-  severity: "low" | "medium" | "high" | "critical"
-  branchId: string
-  branchName: string
-  status: "success" | "failure"
-  errorMessage?: string
+  userId: string;
+  username: string;
+  actionType: string;
+  entityType: string;
+  entityId?: string;
+  description: string;
+  details?: any;
+  severity: "low" | "medium" | "high" | "critical";
+  branchId: string;
+  branchName: string;
+  status: "success" | "failure";
+  errorMessage?: string;
 }
 
 export interface TransactionAuditParams {
-  userId: string
-  username?: string
-  action: "create" | "update" | "delete" | "transfer"
-  transactionType: string
-  transactionId: string
-  amount: number
-  details?: Record<string, any>
-  severity?: "low" | "medium" | "high" | "critical"
-  branchId: string
-  branchName: string
-  status?: "success" | "failure"
-  errorMessage?: string
+  userId: string;
+  username?: string;
+  action: "create" | "update" | "delete" | "transfer";
+  transactionType: string;
+  transactionId: string;
+  amount: number;
+  details?: Record<string, any>;
+  severity?: "low" | "medium" | "high" | "critical";
+  branchId: string;
+  branchName: string;
+  status?: "success" | "failure";
+  errorMessage?: string;
 }
 
 export interface AuditLogEntry {
-  action: string
-  entity_type: string
-  entity_id?: string
-  user_id: string
-  username?: string
-  branch_id?: string
-  description?: string
-  details?: Record<string, any>
-  severity?: "low" | "medium" | "high" | "critical"
-  ip_address?: string
-  user_agent?: string
+  action: string;
+  entity_type: string;
+  entity_id?: string;
+  user_id: string;
+  username?: string;
+  branch_id?: string;
+  description?: string;
+  details?: Record<string, any>;
+  severity?: "low" | "medium" | "high" | "critical";
+  ip_address?: string;
+  user_agent?: string;
 }
 
 // Get user's full name from database
 async function getUserFullName(userId: string): Promise<string> {
   try {
     if (!userId || userId === "unknown" || userId === "System") {
-      return "System User"
+      return "System User";
     }
 
     // Check if userId looks like a UUID (basic validation)
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
     if (!uuidRegex.test(userId)) {
-      console.warn(`Invalid UUID format for user ID: ${userId}`)
-      return `User ${userId}`
+      console.warn(`Invalid UUID format for user ID: ${userId}`);
+      return `User ${userId}`;
     }
 
     // Try to get user from database
     const users = await sql`
       SELECT first_name, last_name, email FROM users WHERE id = ${userId}
-    `
+    `;
 
     if (users && users.length > 0) {
-      const { first_name, last_name, email } = users[0]
+      const { first_name, last_name, email } = users[0];
       if (first_name && last_name) {
-        return `${first_name} ${last_name}`
+        return `${first_name} ${last_name}`;
       } else if (first_name) {
-        return first_name
+        return first_name;
       } else if (last_name) {
-        return last_name
+        return last_name;
       } else if (email) {
-        return email
+        return email;
       }
     }
 
-    return "Unknown User"
+    return "Unknown User";
   } catch (error) {
-    console.error(`Failed to get user name for ID ${userId}:`, error)
-    return "Unknown User"
+    console.error(`Failed to get user name for ID ${userId}:`, error);
+    return "Unknown User";
   }
 }
 
@@ -90,21 +91,38 @@ export class AuditLoggerService {
   static async log(data: AuditLogData): Promise<void> {
     try {
       // Validate that we have proper UUIDs, not "System"
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
       // If userId is "System" or invalid, don't log to avoid UUID errors
-      if (!data.userId || data.userId === "System" || !uuidRegex.test(data.userId)) {
-        console.warn("⚠️ Skipping audit log due to invalid user ID:", data.userId)
-        return
+      if (
+        !data.userId ||
+        data.userId === "System" ||
+        !uuidRegex.test(data.userId)
+      ) {
+        console.warn(
+          "⚠️ Skipping audit log due to invalid user ID:",
+          data.userId
+        );
+        return;
       }
 
       // If branchId is "System" or invalid, don't log to avoid UUID errors
-      if (!data.branchId || data.branchId === "System" || !uuidRegex.test(data.branchId)) {
-        console.warn("⚠️ Skipping audit log due to invalid branch ID:", data.branchId)
-        return
+      if (
+        !data.branchId ||
+        data.branchId === "System" ||
+        !uuidRegex.test(data.branchId)
+      ) {
+        console.warn(
+          "⚠️ Skipping audit log due to invalid branch ID:",
+          data.branchId
+        );
+        return;
       }
 
-      console.log(`📝 Audit log: Using username "${data.username}" for user ID ${data.userId}`)
+      console.log(
+        `Audit log: Using username "${data.username}" for user ID ${data.userId}`
+      );
 
       // Ensure audit_logs table exists
       await sql`
@@ -126,7 +144,7 @@ export class AuditLoggerService {
           user_agent TEXT,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
-      `
+      `;
 
       // Insert audit log
       await sql`
@@ -157,11 +175,13 @@ export class AuditLoggerService {
           ${data.status},
           ${data.errorMessage || null}
         )
-      `
+      `;
 
-      console.log(`📝 Audit log created: ${data.actionType} by ${data.username} (${data.userId})`)
+      console.log(
+        `Audit log created: ${data.actionType} by ${data.username} (${data.userId})`
+      );
     } catch (error) {
-      console.error("❌ Failed to create audit log:", error)
+      console.error("Failed to create audit log:", error);
       // Don't throw error to avoid breaking the main transaction
     }
   }
@@ -171,9 +191,14 @@ export class AuditLoggerService {
    */
   static async logTransaction(params: TransactionAuditParams): Promise<void> {
     // Get username if not provided
-    let username = params.username
-    if (!username && params.userId && params.userId !== "unknown" && params.userId !== "System") {
-      username = await getUserFullName(params.userId)
+    let username = params.username;
+    if (
+      !username &&
+      params.userId &&
+      params.userId !== "unknown" &&
+      params.userId !== "System"
+    ) {
+      username = await getUserFullName(params.userId);
     }
 
     await this.log({
@@ -194,26 +219,31 @@ export class AuditLoggerService {
       branchName: params.branchName,
       status: params.status || "success",
       errorMessage: params.errorMessage,
-    })
+    });
   }
 
   /**
    * Log authentication events
    */
   static async logAuth(params: {
-    userId: string
-    username?: string
-    action: "login" | "logout" | "failed_login"
-    ipAddress?: string
-    userAgent?: string
-    branchId?: string
-    branchName?: string
-    errorMessage?: string
+    userId: string;
+    username?: string;
+    action: "login" | "logout" | "failed_login";
+    ipAddress?: string;
+    userAgent?: string;
+    branchId?: string;
+    branchName?: string;
+    errorMessage?: string;
   }): Promise<void> {
     // Get username if not provided
-    let username = params.username
-    if (!username && params.userId && params.userId !== "unknown" && params.userId !== "System") {
-      username = await getUserFullName(params.userId)
+    let username = params.username;
+    if (
+      !username &&
+      params.userId &&
+      params.userId !== "unknown" &&
+      params.userId !== "System"
+    ) {
+      username = await getUserFullName(params.userId);
     }
 
     await this.log({
@@ -230,26 +260,31 @@ export class AuditLoggerService {
       branchName: params.branchName,
       status: params.action === "failed_login" ? "failure" : "success",
       errorMessage: params.errorMessage,
-    })
+    });
   }
 
   /**
    * Log system events
    */
   static async logSystem(params: {
-    userId: string
-    username?: string
-    action: string
-    description: string
-    details?: Record<string, any>
-    severity?: "low" | "medium" | "high" | "critical"
-    branchId?: string
-    branchName?: string
+    userId: string;
+    username?: string;
+    action: string;
+    description: string;
+    details?: Record<string, any>;
+    severity?: "low" | "medium" | "high" | "critical";
+    branchId?: string;
+    branchName?: string;
   }): Promise<void> {
     // Get username if not provided
-    let username = params.username
-    if (!username && params.userId && params.userId !== "unknown" && params.userId !== "System") {
-      username = await getUserFullName(params.userId)
+    let username = params.username;
+    if (
+      !username &&
+      params.userId &&
+      params.userId !== "unknown" &&
+      params.userId !== "System"
+    ) {
+      username = await getUserFullName(params.userId);
     }
 
     await this.log({
@@ -262,7 +297,7 @@ export class AuditLoggerService {
       severity: params.severity || "low",
       branchId: params.branchId,
       branchName: params.branchName,
-    })
+    });
   }
 
   /**
@@ -270,18 +305,18 @@ export class AuditLoggerService {
    */
   static async getRecentLogs(limit = 100): Promise<any[]> {
     try {
-      await this.ensureAuditTable()
+      await this.ensureAuditTable();
 
       const logs = await sql`
         SELECT * FROM audit_logs 
         ORDER BY created_at DESC 
         LIMIT ${limit}
-      `
+      `;
 
-      return logs
+      return logs;
     } catch (error) {
-      console.error("Failed to fetch audit logs:", error)
-      return []
+      console.error("Failed to fetch audit logs:", error);
+      return [];
     }
   }
 
@@ -290,19 +325,19 @@ export class AuditLoggerService {
    */
   static async getLogsByUser(userId: string, limit = 50): Promise<any[]> {
     try {
-      await this.ensureAuditTable()
+      await this.ensureAuditTable();
 
       const logs = await sql`
         SELECT * FROM audit_logs 
         WHERE user_id = ${userId}
         ORDER BY created_at DESC 
         LIMIT ${limit}
-      `
+      `;
 
-      return logs
+      return logs;
     } catch (error) {
-      console.error("Failed to fetch user audit logs:", error)
-      return []
+      console.error("Failed to fetch user audit logs:", error);
+      return [];
     }
   }
 
@@ -328,11 +363,11 @@ export class AuditLoggerService {
           user_agent TEXT,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )
-      `
+      `;
 
-      console.log("audit_logs table created.")
+      console.log("audit_logs table created.");
     } catch (error) {
-      console.error("Failed to ensure audit_logs table exists:", error)
+      console.error("Failed to ensure audit_logs table exists:", error);
     }
   }
 }
@@ -345,11 +380,11 @@ async function auditTableExists(): Promise<boolean> {
         FROM   information_schema.tables 
         WHERE  table_name = 'audit_logs'
       );
-    `
-    return result[0].exists
+    `;
+    return result[0].exists;
   } catch (error) {
-    console.error("Error checking if audit table exists:", error)
-    return false
+    console.error("Error checking if audit table exists:", error);
+    return false;
   }
 }
 
@@ -357,18 +392,26 @@ export const auditLogger = {
   async log(entry: AuditLogEntry): Promise<void> {
     try {
       // Check if table exists first
-      const tableExists = await auditTableExists()
+      const tableExists = await auditTableExists();
 
       if (!tableExists) {
-        console.warn("Audit logs table does not exist, skipping audit log")
-        return
+        console.warn("Audit logs table does not exist, skipping audit log");
+        return;
       }
 
       // Validate that we have proper UUIDs, not "System"
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      if (!entry.user_id || entry.user_id === "System" || !uuidRegex.test(entry.user_id)) {
-        console.warn("Skipping audit log due to invalid user ID:", entry.user_id)
-        return
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (
+        !entry.user_id ||
+        entry.user_id === "System" ||
+        !uuidRegex.test(entry.user_id)
+      ) {
+        console.warn(
+          "Skipping audit log due to invalid user ID:",
+          entry.user_id
+        );
+        return;
       }
 
       // Validate required fields
@@ -377,26 +420,31 @@ export const auditLogger = {
           action: !!entry.action,
           entity_type: !!entry.entity_type,
           user_id: !!entry.user_id,
-        })
-        return
+        });
+        return;
       }
 
       // Get username if not provided
-      let username = "System User"
-      if (entry.user_id && entry.user_id !== "unknown" && entry.user_id !== "System") {
-        username = await getUserFullName(entry.user_id)
+      let username = "System User";
+      if (
+        entry.user_id &&
+        entry.user_id !== "unknown" &&
+        entry.user_id !== "System"
+      ) {
+        username = await getUserFullName(entry.user_id);
       }
 
       // Ensure description is not null
-      const description = entry.description || `${entry.action} action on ${entry.entity_type}`
+      const description =
+        entry.description || `${entry.action} action on ${entry.entity_type}`;
 
       // Ensure severity is valid - fix "info" to "low"
-      let severity = entry.severity || "low"
+      let severity = entry.severity || "low";
       if (severity === "info") {
-        severity = "low"
+        severity = "low";
       }
       if (!["low", "medium", "high", "critical"].includes(severity)) {
-        severity = "low"
+        severity = "low";
       }
 
       // Insert audit log entry using action_type instead of action
@@ -428,13 +476,15 @@ export const auditLogger = {
           ${entry.user_agent || null},
           CURRENT_TIMESTAMP
         )
-      `
+      `;
 
-      console.log(`✓ Audit log created: ${entry.action} for ${entry.entity_type}`)
+      console.log(
+        `✓ Audit log created: ${entry.action} for ${entry.entity_type}`
+      );
     } catch (error) {
       // Don't throw errors for audit logging failures - just log them
-      console.error("Failed to create audit log (non-critical):", error)
-      console.error("Audit entry that failed:", entry)
+      console.error("Failed to create audit log (non-critical):", error);
+      console.error("Audit entry that failed:", entry);
     }
   },
-}
+};

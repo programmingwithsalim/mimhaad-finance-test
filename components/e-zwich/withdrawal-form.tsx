@@ -114,46 +114,46 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
   // Calculate fee when amount changes (only if user hasn't manually modified)
   useEffect(() => {
     if (!userModifiedFee) {
-    if (feeConfig && watchAmount > 0) {
-      let calculatedFee = 0;
+      if (feeConfig && watchAmount > 0) {
+        let calculatedFee = 0;
 
-      if (feeConfig.fee_type === "percentage") {
-        calculatedFee = watchAmount * (Number(feeConfig.fee_value) / 100);
-      } else if (feeConfig.fee_type === "fixed") {
-        calculatedFee = Number(feeConfig.fee_value);
-      } else if (feeConfig.fee_type === "tiered") {
-        const tiers = feeConfig.tier_config || [];
-        for (const tier of tiers) {
-          if (
-            watchAmount >= tier.min_amount &&
-            watchAmount <= tier.max_amount
-          ) {
-            calculatedFee = Number(tier.fee_value);
-            break;
+        if (feeConfig.fee_type === "percentage") {
+          calculatedFee = watchAmount * (Number(feeConfig.fee_value) / 100);
+        } else if (feeConfig.fee_type === "fixed") {
+          calculatedFee = Number(feeConfig.fee_value);
+        } else if (feeConfig.fee_type === "tiered") {
+          const tiers = feeConfig.tier_config || [];
+          for (const tier of tiers) {
+            if (
+              watchAmount >= tier.min_amount &&
+              watchAmount <= tier.max_amount
+            ) {
+              calculatedFee = Number(tier.fee_value);
+              break;
+            }
           }
         }
-      }
 
-      // Apply min/max limits
-      if (
-        feeConfig.minimum_fee &&
-        calculatedFee < Number(feeConfig.minimum_fee)
-      ) {
-        calculatedFee = Number(feeConfig.minimum_fee);
-      }
-      if (
-        feeConfig.maximum_fee &&
-        calculatedFee > Number(feeConfig.maximum_fee)
-      ) {
-        calculatedFee = Number(feeConfig.maximum_fee);
-      }
+        // Apply min/max limits
+        if (
+          feeConfig.minimum_fee &&
+          calculatedFee < Number(feeConfig.minimum_fee)
+        ) {
+          calculatedFee = Number(feeConfig.minimum_fee);
+        }
+        if (
+          feeConfig.maximum_fee &&
+          calculatedFee > Number(feeConfig.maximum_fee)
+        ) {
+          calculatedFee = Number(feeConfig.maximum_fee);
+        }
 
-      form.setValue("fee", Number(calculatedFee.toFixed(2)));
-    } else if (watchAmount > 0) {
-      // Fallback fee calculation
-      const fallbackFee = Math.max(5, watchAmount * 0.01); // 1% with minimum 5 GHS
-      form.setValue("fee", Number(fallbackFee.toFixed(2)));
-    }
+        form.setValue("fee", Number(calculatedFee.toFixed(2)));
+      } else if (watchAmount > 0) {
+        // Fallback fee calculation
+        const fallbackFee = Math.max(5, watchAmount * 0.01); // 1% with minimum 5 GHS
+        form.setValue("fee", Number(fallbackFee.toFixed(2)));
+      }
     }
   }, [watchAmount, feeConfig, form, userModifiedFee]);
 
@@ -171,7 +171,7 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
     setLoadingAccounts(true);
     try {
       console.log(
-        "🔍 [E-ZWICH] Loading settlement accounts for branch:",
+        "[E-ZWICH] Loading settlement accounts for branch:",
         user.branchId
       );
 
@@ -181,7 +181,7 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ [E-ZWICH] API Error:", errorText);
+        console.error("[E-ZWICH] API Error:", errorText);
         throw new Error(
           `Failed to load accounts: ${response.status} ${response.statusText}`
         );
@@ -206,7 +206,7 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
         );
       }
     } catch (error) {
-      console.error("❌ [E-ZWICH] Error loading settlement accounts:", error);
+      console.error("[E-ZWICH] Error loading settlement accounts:", error);
       setEzwichSettlementAccounts([]);
       toast({
         title: "Error",
@@ -257,7 +257,7 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ [E-ZWICH] API Error:", errorText);
+        console.error("[E-ZWICH] API Error:", errorText);
         throw new Error(
           `Transaction failed: ${response.status} ${response.statusText}`
         );
@@ -278,7 +278,7 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
         throw new Error(result.error || "Failed to process withdrawal");
       }
     } catch (error: any) {
-      console.error("❌ [E-ZWICH] Withdrawal error:", error);
+      console.error("[E-ZWICH] Withdrawal error:", error);
       toast({
         title: "Error",
         description: error?.message || "Something went wrong",

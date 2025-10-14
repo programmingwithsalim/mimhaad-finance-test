@@ -163,6 +163,107 @@ export function EquityStatement({ dateRange, branch }: EquityStatementProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
+          {/* SHAREHOLDER FUNDS SUMMARY */}
+          <div>
+            <div className="bg-primary/10 p-3 mb-4 rounded-lg">
+              <h3 className="font-bold text-lg">Shareholder Funds Summary</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border-2 border-blue-200 bg-blue-50/50">
+                <CardContent className="pt-6">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Share Capital
+                      </span>
+                      <span className="text-lg font-bold text-blue-700">
+                        GHS {formatCurrency(equityData.closing.shareCapital)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Retained Earnings
+                      </span>
+                      <span className="text-lg font-bold text-blue-700">
+                        GHS{" "}
+                        {formatCurrency(equityData.closing.retainedEarnings)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Other Reserves
+                      </span>
+                      <span className="text-lg font-bold text-blue-700">
+                        GHS {formatCurrency(equityData.closing.otherFund)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t-2 border-blue-300">
+                      <span className="text-base font-bold">
+                        Total Shareholder Funds
+                      </span>
+                      <span className="text-xl font-bold text-green-700">
+                        GHS {formatCurrency(equityData.closing.total)}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-green-200 bg-green-50/50">
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-sm text-muted-foreground mb-2">
+                        What are Shareholder Funds?
+                      </h4>
+                      <p className="text-sm text-muted-foreground">
+                        Shareholder Funds (also called Equity or Net Worth)
+                        represent the total value owned by shareholders. It
+                        includes initial capital invested plus accumulated
+                        profits.
+                      </p>
+                    </div>
+                    <div className="bg-white p-3 rounded border">
+                      <div className="text-sm space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Opening Balance:
+                          </span>
+                          <span className="font-medium">
+                            GHS {formatCurrency(equityData.opening.total)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Income for Period:
+                          </span>
+                          <span className="font-medium text-green-600">
+                            +GHS {formatCurrency(equityData.incomeForTheYear)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between pt-2 border-t font-semibold">
+                          <span>Closing Balance:</span>
+                          <span className="text-green-700">
+                            GHS {formatCurrency(equityData.closing.total)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* DETAILED STATEMENT OF CHANGES IN EQUITY */}
+          <div>
+            <div className="bg-primary/10 p-3 mb-4 rounded-lg">
+              <h3 className="font-bold text-lg">
+                Detailed Statement of Changes in Equity
+              </h3>
+            </div>
+          </div>
+
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>

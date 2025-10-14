@@ -124,9 +124,9 @@ async function initializeJumiaTables(): Promise<void> {
     await sql`CREATE INDEX IF NOT EXISTS idx_jumia_packages_tracking_id ON jumia_packages(tracking_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_jumia_packages_created_at ON jumia_packages(created_at)`;
 
-    console.log("✅ [JUMIA] Database tables initialized successfully");
+    console.log("[JUMIA] Database tables initialized successfully");
   } catch (error) {
-    console.error("❌ [JUMIA] Error initializing database tables:", error);
+    console.error("[JUMIA] Error initializing database tables:", error);
     throw error;
   }
 }

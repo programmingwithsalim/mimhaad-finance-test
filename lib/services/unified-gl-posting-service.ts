@@ -48,9 +48,7 @@ export class UnifiedGLPostingService {
   ): Promise<{ success: boolean; glTransactionId?: string; error?: string }> {
     try {
       console.log(
-        "🔷 [GL] Creating GL entries for " +
-          data.sourceModule +
-          " transaction:",
+        "[GL] Creating GL entries for " + data.sourceModule + " transaction:",
         data.transactionId
       );
 
@@ -63,7 +61,7 @@ export class UnifiedGLPostingService {
       ) {
         validTransactionId = crypto.randomUUID();
         console.log(
-          "🔷 [GL] Generated new UUID for transaction:",
+          "[GL] Generated new UUID for transaction:",
           validTransactionId
         );
       }
@@ -78,7 +76,7 @@ export class UnifiedGLPostingService {
 
       if (existingTransaction.length > 0) {
         console.log(
-          "🔷 [GL] GL entries already exist for " +
+          "[GL] GL entries already exist for " +
             data.sourceModule +
             " transaction " +
             data.transactionId
@@ -96,7 +94,7 @@ export class UnifiedGLPostingService {
         data
       );
 
-      console.log("🔍 [DEBUG] Retrieved GL accounts for transaction:", {
+      console.log("[DEBUG] Retrieved GL accounts for transaction:", {
         sourceModule: data.sourceModule,
         transactionType: data.transactionType,
         accounts,
@@ -105,7 +103,7 @@ export class UnifiedGLPostingService {
 
       const entries = await this.createGLEntriesForTransaction(data, accounts);
 
-      console.log("🔍 [DEBUG] Created GL entries:", {
+      console.log("[DEBUG] Created GL entries:", {
         sourceModule: data.sourceModule,
         transactionType: data.transactionType,
         amount: data.amount,
@@ -145,7 +143,7 @@ export class UnifiedGLPostingService {
       `;
 
       for (const entry of entries) {
-        console.log("🔍 [DEBUG] Saving GL entry:", {
+        console.log("[DEBUG] Saving GL entry:", {
           accountId: entry.accountId,
           accountCode: entry.accountCode,
           debit: entry.debit,
@@ -160,7 +158,7 @@ export class UnifiedGLPostingService {
           entry.description
         }, ${JSON.stringify(entry.metadata || {})})
         `;
-        console.log("🔍 [DEBUG] GL entry saved successfully");
+        console.log("[DEBUG] GL entry saved successfully");
       }
 
       await this.updateAccountBalances(entries);
@@ -176,7 +174,7 @@ export class UnifiedGLPostingService {
 
       if (paymentAccountId && paymentAffected !== 0) {
         console.log(
-          `🏦 [GL] Adding ${paymentAccountType} GL entries (${
+          `[GL] Adding ${paymentAccountType} GL entries (${
             paymentAffected > 0 ? "Debit" : "Credit"
           }: ${Math.abs(paymentAffected)})`
         );
@@ -218,7 +216,7 @@ export class UnifiedGLPostingService {
             )
           `;
 
-          console.log(`✅ [GL] ${paymentAccountType} GL entry created`);
+          console.log(`[GL] ${paymentAccountType} GL entry created`);
         } else {
           console.warn(
             `⚠️  No GL mapping found for ${paymentAccountType} account ${paymentAccountId}`
@@ -227,7 +225,7 @@ export class UnifiedGLPostingService {
       }
 
       console.log(
-        "🔷 [GL] GL entries created successfully for " +
+        "[GL] GL entries created successfully for " +
           data.sourceModule +
           " transaction: " +
           data.transactionId
@@ -318,7 +316,7 @@ export class UnifiedGLPostingService {
 
       return { success: true, glTransactionId };
     } catch (error) {
-      console.error("🔷 [GL] Error creating GL entries:", error);
+      console.error("[GL] Error creating GL entries:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
@@ -334,7 +332,7 @@ export class UnifiedGLPostingService {
   ): Promise<Record<string, any>> {
     try {
       console.log(
-        "🔍 [DEBUG] Getting GL accounts for transaction:",
+        "[DEBUG] Getting GL accounts for transaction:",
         sourceModule,
         transactionType,
         branchId
@@ -342,9 +340,7 @@ export class UnifiedGLPostingService {
 
       // Special handling for float operations with custom entries
       if (sourceModule === "float_operations" && data.metadata?.customEntries) {
-        console.log(
-          "🔍 [DEBUG] Processing float operations with custom entries"
-        );
+        console.log("[DEBUG] Processing float operations with custom entries");
 
         // Get account codes for the custom entries
         const accountCodes: Record<string, string> = {};
@@ -397,7 +393,7 @@ export class UnifiedGLPostingService {
       }
 
       console.log(
-        "🔍 [DEBUG] Using transaction type for GL mapping:",
+        "[DEBUG] Using transaction type for GL mapping:",
         actualTransactionType
       );
 
@@ -414,7 +410,7 @@ export class UnifiedGLPostingService {
           AND gm.is_active = true
       `;
 
-      console.log("🔍 [DEBUG] Found GL mappings:", mappings);
+      console.log("[DEBUG] Found GL mappings:", mappings);
 
       // Get the actual provider from the transaction data
       const actualProvider =
@@ -433,12 +429,12 @@ export class UnifiedGLPostingService {
 
         if (providerSpecificMappings.length > 0) {
           console.log(
-            `🔍 [DEBUG] Found ${providerSpecificMappings.length} provider-specific mappings for '${actualProvider}'`
+            `[DEBUG] Found ${providerSpecificMappings.length} provider-specific mappings for '${actualProvider}'`
           );
           return this.formatGLAccounts(providerSpecificMappings);
         } else {
           console.log(
-            `🔍 [DEBUG] No provider-specific mappings found for '${actualProvider}', will create them`
+            `[DEBUG] No provider-specific mappings found for '${actualProvider}', will create them`
           );
         }
       }
@@ -455,7 +451,7 @@ export class UnifiedGLPostingService {
 
         if (!hasCorrectProvider) {
           console.log(
-            `🔍 [DEBUG] No mappings found for provider '${actualProvider}', will create provider-specific mappings`
+            `[DEBUG] No mappings found for provider '${actualProvider}', will create provider-specific mappings`
           );
           shouldCreateProviderSpecificMappings = true;
         }
@@ -478,7 +474,7 @@ export class UnifiedGLPostingService {
         if (defaultMappings.length === 0) {
           // If no mappings found, try to create them automatically
           console.log(
-            "🔍 [DEBUG] No GL mappings found, attempting to create them automatically"
+            "[DEBUG] No GL mappings found, attempting to create them automatically"
           );
 
           try {
@@ -508,13 +504,13 @@ export class UnifiedGLPostingService {
             `;
 
             console.log(
-              "🔍 [DEBUG] Successfully created and found GL mappings:",
+              "[DEBUG] Successfully created and found GL mappings:",
               newMappings
             );
             return this.formatGLAccounts(newMappings);
           } catch (error) {
             console.error(
-              "🔍 [DEBUG] Failed to create GL mappings automatically:",
+              "[DEBUG] Failed to create GL mappings automatically:",
               error
             );
             return {};
@@ -531,7 +527,7 @@ export class UnifiedGLPostingService {
 
             if (!hasCorrectProvider) {
               console.log(
-                `🔍 [DEBUG] Default mappings also don't use correct provider '${actualProvider}', creating new ones`
+                `[DEBUG] Default mappings also don't use correct provider '${actualProvider}', creating new ones`
               );
 
               try {
@@ -561,13 +557,13 @@ export class UnifiedGLPostingService {
                 `;
 
                 console.log(
-                  "🔍 [DEBUG] Successfully created and found GL mappings:",
+                  "[DEBUG] Successfully created and found GL mappings:",
                   newMappings
                 );
                 return this.formatGLAccounts(newMappings);
               } catch (error) {
                 console.error(
-                  "🔍 [DEBUG] Failed to create GL mappings automatically:",
+                  "[DEBUG] Failed to create GL mappings automatically:",
                   error
                 );
                 return {};
@@ -576,7 +572,7 @@ export class UnifiedGLPostingService {
           }
 
           console.log(
-            "🔍 [DEBUG] Using default mappings from main branch:",
+            "[DEBUG] Using default mappings from main branch:",
             defaultMappings
           );
           return this.formatGLAccounts(defaultMappings);
@@ -584,13 +580,13 @@ export class UnifiedGLPostingService {
       }
 
       console.log(
-        "🔍 [DEBUG] Successfully created and found GL mappings:",
+        "[DEBUG] Successfully created and found GL mappings:",
         mappings
       );
       return this.formatGLAccounts(mappings);
     } catch (error) {
       console.error(
-        "🔍 [DEBUG] Error getting GL accounts for transaction:",
+        "[DEBUG] Error getting GL accounts for transaction:",
         error
       );
       return {};
@@ -1495,10 +1491,7 @@ export class UnifiedGLPostingService {
     sourceModule: string;
   }): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log(
-        "🔷 [GL] Deleting GL entries for transaction:",
-        transactionId
-      );
+      console.log("[GL] Deleting GL entries for transaction:", transactionId);
 
       // Get the GL transaction ID
       const glTransaction = await sql`
@@ -1508,7 +1501,7 @@ export class UnifiedGLPostingService {
       `;
 
       if (glTransaction.length === 0) {
-        console.log("🔷 [GL] No GL transaction found to delete");
+        console.log("[GL] No GL transaction found to delete");
         return { success: true };
       }
 
@@ -1541,10 +1534,10 @@ export class UnifiedGLPostingService {
         WHERE id = ${glTransactionId}
       `;
 
-      console.log("🔷 [GL] GL entries deleted successfully");
+      console.log("[GL] GL entries deleted successfully");
       return { success: true };
     } catch (error) {
-      console.error("🔷 [GL] Error deleting GL entries:", error);
+      console.error("[GL] Error deleting GL entries:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
@@ -1571,7 +1564,7 @@ export class UnifiedGLPostingService {
   }> {
     try {
       console.log(
-        "🔷 [GL] Creating commission GL entries for transaction:",
+        "[GL] Creating commission GL entries for transaction:",
         transactionId
       );
 
@@ -1585,7 +1578,7 @@ export class UnifiedGLPostingService {
 
       if (existingCommission.length > 0) {
         console.log(
-          "🔷 [GL] Commission GL entries already exist for transaction:",
+          "[GL] Commission GL entries already exist for transaction:",
           transactionId
         );
         return { success: true, glTransactionId: existingCommission[0].id };
@@ -1614,28 +1607,33 @@ export class UnifiedGLPostingService {
         }
       );
 
-      console.log(`🔷 [GL] Commission accounts:`, accounts);
+      console.log(`[GL] Commission accounts:`, accounts);
 
       // Validate that we have the required accounts
-      if (!accounts.main) {
+      // For commissions: asset = receivable, expense = commission expense
+      if (!accounts.asset && !accounts.expense) {
         throw new Error(
-          `No main account found for commission GL posting. Available accounts: ${Object.keys(
+          `No commission accounts found for GL posting. Available accounts: ${Object.keys(
             accounts
           ).join(", ")}`
         );
       }
 
-      // Create commission entries - use revenue and main accounts
-      const revenueAccountId = accounts.revenue || accounts.main;
-      const revenueAccountCode = accounts.revenueCode || accounts.mainCode;
+      // Commission GL entries:
+      // Debit: Commission Expense (cost to company)
+      // Credit: Commission Payable/Receivable (liability/asset - money owed to agents)
+      const expenseAccountId = accounts.expense;
+      const expenseAccountCode = accounts.expenseCode;
+      const assetAccountId = accounts.asset;
+      const assetAccountCode = accounts.assetCode;
 
       const entries = [
         {
-          accountId: revenueAccountId,
-          accountCode: revenueAccountCode,
-          debit: 0,
-          credit: amount,
-          description: `Commission Revenue - ${reference}`,
+          accountId: expenseAccountId,
+          accountCode: expenseAccountCode,
+          debit: amount,
+          credit: 0,
+          description: `Commission Expense - ${reference}`,
           metadata: {
             transactionId,
             source: metadata?.source || "Unknown",
@@ -1646,11 +1644,11 @@ export class UnifiedGLPostingService {
           },
         },
         {
-          accountId: accounts.main,
-          accountCode: accounts.mainCode,
-          debit: amount,
-          credit: 0,
-          description: `Commission Receivable - ${reference}`,
+          accountId: assetAccountId,
+          accountCode: assetAccountCode,
+          debit: 0,
+          credit: amount,
+          description: `Commission Payable - ${reference}`,
           metadata: {
             transactionId,
             source: metadata?.source || "Unknown",
@@ -1702,7 +1700,7 @@ export class UnifiedGLPostingService {
       await this.updateAccountBalances(entries);
 
       console.log(
-        "🔷 [GL] Commission GL entries created successfully for transaction:",
+        "[GL] Commission GL entries created successfully for transaction:",
         transactionId
       );
 
@@ -1730,7 +1728,7 @@ export class UnifiedGLPostingService {
 
       return { success: true, glTransactionId };
     } catch (error) {
-      console.error("🔷 [GL] Error creating commission GL entries:", error);
+      console.error("[GL] Error creating commission GL entries:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),
@@ -1757,7 +1755,7 @@ export class UnifiedGLPostingService {
   }> {
     try {
       console.log(
-        "🔷 [GL] Creating inventory purchase GL entries for transaction:",
+        "[GL] Creating inventory purchase GL entries for transaction:",
         transactionId
       );
 
@@ -1771,7 +1769,7 @@ export class UnifiedGLPostingService {
 
       if (existingInventory.length > 0) {
         console.log(
-          "🔷 [GL] Inventory purchase GL entries already exist for transaction:",
+          "[GL] Inventory purchase GL entries already exist for transaction:",
           transactionId
         );
         return { success: true, glTransactionId: existingInventory[0].id };
@@ -1800,7 +1798,7 @@ export class UnifiedGLPostingService {
         }
       );
 
-      console.log(`🔷 [GL] Inventory purchase accounts:`, accounts);
+      console.log(`[GL] Inventory purchase accounts:`, accounts);
 
       // Validate that we have the required accounts
       if (!accounts.main) {
@@ -1888,7 +1886,7 @@ export class UnifiedGLPostingService {
       await this.updateAccountBalances(entries);
 
       console.log(
-        "🔷 [GL] Inventory purchase GL entries created successfully for transaction:",
+        "[GL] Inventory purchase GL entries created successfully for transaction:",
         transactionId
       );
 
@@ -1917,7 +1915,7 @@ export class UnifiedGLPostingService {
       return { success: true, glTransactionId };
     } catch (error) {
       console.error(
-        "🔷 [GL] Error creating inventory purchase GL entries:",
+        "[GL] Error creating inventory purchase GL entries:",
         error
       );
       return {
@@ -2015,7 +2013,7 @@ export class UnifiedGLPostingService {
       }
 
       console.log(
-        "🔷 [GL] Creating reversal GL entries for " +
+        "[GL] Creating reversal GL entries for " +
           sourceModule +
           " transaction:",
         transactionId
@@ -2031,7 +2029,7 @@ export class UnifiedGLPostingService {
 
       if (existingTransaction.length > 0) {
         console.log(
-          "🔷 [GL] Reversal GL entries already exist for " +
+          "[GL] Reversal GL entries already exist for " +
             sourceModule +
             " transaction " +
             transactionId
@@ -2062,7 +2060,7 @@ export class UnifiedGLPostingService {
         }
       );
 
-      console.log("🔍 [DEBUG] Retrieved GL accounts for reversal:", {
+      console.log("[DEBUG] Retrieved GL accounts for reversal:", {
         sourceModule,
         transactionType,
         accounts,
@@ -2086,7 +2084,7 @@ export class UnifiedGLPostingService {
         accounts
       );
 
-      console.log("🔍 [DEBUG] Created reversal GL entries:", {
+      console.log("[DEBUG] Created reversal GL entries:", {
         sourceModule,
         transactionType,
         amount,
@@ -2129,7 +2127,7 @@ export class UnifiedGLPostingService {
         // Skip zero-value entries
         if (entry.debit === 0 && entry.credit === 0) continue;
 
-        console.log("🔍 [DEBUG] Saving reversal GL entry:", {
+        console.log("[DEBUG] Saving reversal GL entry:", {
           accountId: entry.accountId,
           accountCode: entry.accountCode,
           debit: entry.debit,
@@ -2145,7 +2143,7 @@ export class UnifiedGLPostingService {
           entry.description
         }, ${JSON.stringify(entry.metadata || {})})
         `;
-        console.log("🔍 [DEBUG] Reversal GL entry saved successfully");
+        console.log("[DEBUG] Reversal GL entry saved successfully");
       }
 
       // Update account balances
@@ -2174,7 +2172,7 @@ export class UnifiedGLPostingService {
       });
 
       console.log(
-        "🔷 [GL] Reversal GL entries created successfully for " +
+        "[GL] Reversal GL entries created successfully for " +
           sourceModule +
           " transaction: " +
           transactionId
@@ -2182,7 +2180,7 @@ export class UnifiedGLPostingService {
 
       return { success: true, glTransactionId };
     } catch (error) {
-      console.error("🔷 [GL] Error creating reversal GL entries:", error);
+      console.error("[GL] Error creating reversal GL entries:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),

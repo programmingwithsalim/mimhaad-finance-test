@@ -31,7 +31,8 @@ interface CashFlowData {
   period: { from: string; to: string };
   operatingActivities: {
     netProfit: NoteValue;
-    adjustmentsForNonCashItems: NoteValue;
+    depreciation: NoteValue;
+    otherNonCashCharges: NoteValue;
     operatingProfitBeforeWorkingCapital: number;
     workingCapitalChanges: {
       accountsReceivable: NoteValue;
@@ -208,16 +209,26 @@ export function CashFlowStatement({
                     )}
                   </TableCell>
                 </TableRow>
-                <TableRow>
-                  <TableCell className="pl-4">
-                    Adjustments for Non-Cash Items
+                <TableRow className="font-semibold bg-muted/50">
+                  <TableCell colSpan={3} className="pl-4">
+                    Adjustments for Non-Cash Items:
                   </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="pl-8">Depreciation</TableCell>
                   <TableCell className="text-center"></TableCell>
                   <TableCell className="text-right">
                     {formatCurrency(
-                      getValue(
-                        data.operatingActivities.adjustmentsForNonCashItems
-                      )
+                      getValue(data.operatingActivities.depreciation)
+                    )}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="pl-8">Other Non-Cash Charges</TableCell>
+                  <TableCell className="text-center"></TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(
+                      getValue(data.operatingActivities.otherNonCashCharges)
                     )}
                   </TableCell>
                 </TableRow>

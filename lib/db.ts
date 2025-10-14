@@ -1,26 +1,26 @@
-import { neon } from "@neondatabase/serverless"
+import { neon } from "@neondatabase/serverless";
 
 if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is not set")
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
 export const sql = neon(process.env.DATABASE_URL, {
   // Suppress the browser warning for production
   disableWarningInBrowsers: true,
-})
+});
 
 // Export db as an alias for sql to maintain compatibility
-export const db = sql
+export const db = sql;
 
 // Test the connection
 export async function testConnection() {
   try {
-    const result = await sql`SELECT 1 as test`
-    console.log("✅ Database connection successful")
-    return result
+    const result = await sql`SELECT 1 as test`;
+    console.log("Database connection successful");
+    return result;
   } catch (error) {
-    console.error("❌ Database connection failed:", error)
-    throw error
+    console.error("Database connection failed:", error);
+    throw error;
   }
 }
 
@@ -43,7 +43,7 @@ export async function initializeBasicTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
     // Create branches table
     await sql`
@@ -58,7 +58,7 @@ export async function initializeBasicTables() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
     // Create sessions table
     await sql`
@@ -69,7 +69,7 @@ export async function initializeBasicTables() {
         expires TIMESTAMP NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
     // Create notifications table
     await sql`
@@ -86,11 +86,11 @@ export async function initializeBasicTables() {
         read_at TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `
+    `;
 
-    console.log("✅ Basic tables initialized")
+    console.log("Basic tables initialized");
   } catch (error) {
-    console.error("❌ Error initializing basic tables:", error)
-    throw error
+    console.error("Error initializing basic tables:", error);
+    throw error;
   }
 }

@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   try {
     const requestData = await request.json();
     console.log(
-      "💰 [RECHARGE] Processing recharge:",
+      "[RECHARGE] Processing recharge:",
       JSON.stringify(requestData, null, 2)
     );
 
@@ -191,13 +191,13 @@ export async function POST(request: Request) {
         targetAccount[0].branch_id,
         reference || `RECHARGE-${Date.now()}`
       );
-      console.log("✅ [RECHARGE] GL entries created for recharge");
+      console.log("[RECHARGE] GL entries created for recharge");
     } catch (glError) {
-      console.error("❌ [RECHARGE] Failed to create GL entries:", glError);
+      console.error("[RECHARGE] Failed to create GL entries:", glError);
       // Don't fail the operation for GL entry issues
     }
 
-    console.log("✅ [RECHARGE] Recharge processed successfully");
+    console.log("[RECHARGE] Recharge processed successfully");
 
     return NextResponse.json({
       success: true,
@@ -211,7 +211,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: any) {
-    console.error("❌ [RECHARGE] Error processing recharge:", error);
+    console.error("[RECHARGE] Error processing recharge:", error);
     return NextResponse.json(
       {
         success: false,

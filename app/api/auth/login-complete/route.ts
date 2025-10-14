@@ -68,13 +68,13 @@ export async function POST(request: NextRequest) {
         userAgent
       );
 
-      console.log(`✅ [2FA] Device added to trusted list for user ${userId}`);
+      console.log(`[2FA] Device added to trusted list for user ${userId}`);
     }
 
     // Create database session
     const session = await createDatabaseSession(user, request);
 
-    console.log("✅ Database session created after 2FA verification");
+    console.log("Database session created after 2FA verification");
 
     // Send login notification
     try {
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       path: "/",
     });
 
-    console.log("✅ Login completed successfully after 2FA");
+    console.log("Login completed successfully after 2FA");
 
     return response;
   } catch (error) {
@@ -119,4 +119,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

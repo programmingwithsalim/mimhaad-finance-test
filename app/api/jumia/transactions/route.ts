@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
       search
     );
 
-    console.log("🔍 [JUMIA API] Fetching transactions for branchId:", branchId);
+    console.log("[JUMIA API] Fetching transactions for branchId:", branchId);
 
     let transactions;
     if (branchId) {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(
-      "🔍 [JUMIA API] Raw transactions from service:",
+      "[JUMIA API] Raw transactions from service:",
       transactions?.length || 0,
       "transactions"
     );

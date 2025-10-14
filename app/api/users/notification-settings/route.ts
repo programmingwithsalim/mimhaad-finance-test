@@ -114,7 +114,7 @@ export async function PUT(request: Request) {
     const session = await getDatabaseSession();
 
     if (!session || !session.user) {
-      console.error("❌ No session or user found in notification settings PUT");
+      console.error("No session or user found in notification settings PUT");
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
@@ -124,11 +124,8 @@ export async function PUT(request: Request) {
     const userId = session.user.id;
     const data = await request.json();
 
-    console.log(
-      "🔍 [NOTIFICATION-SETTINGS] Updating settings for user:",
-      userId
-    );
-    console.log("📋 [NOTIFICATION-SETTINGS] Request data:", data);
+    console.log("[NOTIFICATION-SETTINGS] Updating settings for user:", userId);
+    console.log("[NOTIFICATION-SETTINGS] Request data:", data);
 
     await logger.info(LogCategory.API, "Updating notification settings", {
       userId,
@@ -208,7 +205,7 @@ export async function PUT(request: Request) {
     `;
 
     console.log(
-      "✅ [NOTIFICATION-SETTINGS] Settings updated successfully for user:",
+      "[NOTIFICATION-SETTINGS] Settings updated successfully for user:",
       userId
     );
     await logger.info(
@@ -222,7 +219,7 @@ export async function PUT(request: Request) {
       message: "Notification settings updated successfully",
     });
   } catch (error) {
-    console.error("❌ [NOTIFICATION-SETTINGS] Error updating settings:", error);
+    console.error("[NOTIFICATION-SETTINGS] Error updating settings:", error);
     await logger.error(
       LogCategory.API,
       "Error updating notification settings",

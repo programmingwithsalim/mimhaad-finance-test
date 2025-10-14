@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       ? sql`AND b.inventory_type = ${inventoryType}`
       : sql``;
 
-    console.log("📊 [INVENTORY] Generating aging analysis...");
+    console.log("[INVENTORY] Generating aging analysis...");
 
     // Get all active batches with aging data
     const batches = await sql`
@@ -262,7 +262,7 @@ export async function GET(request: NextRequest) {
         ) / 100,
     };
 
-    console.log(`✅ [INVENTORY] Aging analysis complete:`, {
+    console.log(`[INVENTORY] Aging analysis complete:`, {
       batches: batches.length,
       slowMoving: slowMovingItems.length,
       fastMoving: fastMovingItems.length,
@@ -279,7 +279,7 @@ export async function GET(request: NextRequest) {
       reorderSuggestions,
     });
   } catch (error) {
-    console.error("❌ [INVENTORY] Error generating aging analysis:", error);
+    console.error("[INVENTORY] Error generating aging analysis:", error);
     return NextResponse.json(
       {
         success: false,

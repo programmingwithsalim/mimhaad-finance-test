@@ -119,18 +119,18 @@ export async function POST(request: NextRequest) {
 
         createdMappings.push(newMapping[0]);
         console.log(
-          `✅ [GL MAPPINGS] Created mapping for ${mapping.mapping_type}: ${newMapping[0].id}`
+          `[GL MAPPINGS] Created mapping for ${mapping.mapping_type}: ${newMapping[0].id}`
         );
       } catch (error) {
         console.error(
-          `❌ [GL MAPPINGS] Failed to create mapping for ${mapping.mapping_type}:`,
+          `[GL MAPPINGS] Failed to create mapping for ${mapping.mapping_type}:`,
           error
         );
       }
     }
 
     console.log(
-      `✅ [GL MAPPINGS] Created ${createdMappings.length} float-specific mappings`
+      `[GL MAPPINGS] Created ${createdMappings.length} float-specific mappings`
     );
 
     return NextResponse.json({

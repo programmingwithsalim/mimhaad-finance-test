@@ -11,7 +11,7 @@ export type CommissionSource =
   | "other";
 
 // Simplified commission status types - removed approval/rejection
-export type CommissionStatus = "pending" | "paid";
+export type CommissionStatus = "pending" | "approved" | "rejected" | "paid";
 
 // Payment status types
 export type PaymentStatus = "pending" | "completed" | "failed";
@@ -70,6 +70,12 @@ export interface Commission {
   createdBy: UserReference;
   updatedAt?: string;
   updatedBy?: UserReference;
+  // Approval fields
+  approved_by?: string;
+  approved_by_name?: string;
+  approved_at?: string;
+  approval_comments?: string;
+  // Payment fields
   payment?: PaymentInfo;
   attachments?: Attachment[];
   comments?: Comment[];

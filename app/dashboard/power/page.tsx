@@ -448,12 +448,12 @@ export default function PowerPageEnhancedFixed() {
       )
         .then((res) => res.json())
         .then((data) => {
-          console.log("🔍 [POWER] Statistics response:", data);
+          console.log("[POWER] Statistics response:", data);
           if (data.success) {
-            console.log("🔍 [POWER] Setting statistics:", data.statistics);
+            console.log("[POWER] Setting statistics:", data.statistics);
             setStatistics(data.statistics);
           } else {
-            console.log("🔍 [POWER] Statistics error:", data);
+            console.log("[POWER] Statistics error:", data);
           }
         })
         .catch((error) => {

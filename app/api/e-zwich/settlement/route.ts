@@ -279,13 +279,13 @@ export async function POST(request: NextRequest) {
           `;
 
           console.log(
-            "🔷 [GL] Settlement transfer GL entries created successfully"
+            "[GL] Settlement transfer GL entries created successfully"
           );
         }
       }
     } catch (glError) {
       console.error(
-        "🔷 [GL] Failed to create settlement transfer GL entries:",
+        "[GL] Failed to create settlement transfer GL entries:",
         glError
       );
       // Don't fail the settlement if GL posting fails

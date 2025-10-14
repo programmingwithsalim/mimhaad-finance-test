@@ -26,15 +26,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    devLog.info(
-      `📊 Generating optimized statement for float ${floatAccountId}`,
-      {
-        startDate,
-        endDate,
-        page,
-        pageSize,
-      }
-    );
+    devLog.info(`Generating optimized statement for float ${floatAccountId}`, {
+      startDate,
+      endDate,
+      page,
+      pageSize,
+    });
 
     // Generate statement
     const result = await OptimizedFloatStatementService.generateStatement({
@@ -64,6 +61,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
-
-

@@ -72,7 +72,7 @@ export class OptimizedFloatStatementService {
       const account = accountResult[0];
 
       devLog.info(
-        `📊 Generating statement for ${account.account_type} - ${account.provider}`
+        `Generating statement for ${account.account_type} - ${account.provider}`
       );
 
       // Step 1: Get GL account mappings for this float
@@ -132,7 +132,7 @@ export class OptimizedFloatStatementService {
       const glAccountIds = glMappings.map((m: any) => m.gl_account_id);
 
       devLog.info(
-        `📌 Using ${glMappings.length} GL Account(s):`,
+        ` Using ${glMappings.length} GL Account(s):`,
         glMappings.map((m: any) => `${m.gl_code} - ${m.gl_name}`)
       );
 
@@ -150,11 +150,11 @@ export class OptimizedFloatStatementService {
 
       const floatDateFilter =
         startDate && endDate
-          ? sql`AND ft.created_at >= ${startDate}::date AND ft.created_at <= ${endDate}::date`
+          ? sql`AND ft.created_at::date >= ${startDate}::date AND ft.created_at::date <= ${endDate}::date`
           : startDate
-          ? sql`AND ft.created_at >= ${startDate}::date`
+          ? sql`AND ft.created_at::date >= ${startDate}::date`
           : endDate
-          ? sql`AND ft.created_at <= ${endDate}::date`
+          ? sql`AND ft.created_at::date <= ${endDate}::date`
           : sql``;
 
       // Determine which source modules to include based on account type
@@ -164,7 +164,7 @@ export class OptimizedFloatStatementService {
         // Payment floats: Show ALL transactions (no filter)
         // This includes their own service transactions + being used as payment for other services
         devLog.info(
-          `💳 ${account.account_type}: Showing ALL transactions affecting this account`
+          `${account.account_type}: Showing ALL transactions affecting this account`
         );
         sourceModuleFilter = sql``;
       } else {
@@ -175,7 +175,7 @@ export class OptimizedFloatStatementService {
           "gl_sync",
         ];
         devLog.info(
-          `🔒 ${account.account_type}: Filtering to modules:`,
+          `${account.account_type}: Filtering to modules:`,
           allowedModules
         );
         sourceModuleFilter = sql`AND glt.source_module = ANY(${allowedModules})`;
@@ -206,43 +206,84 @@ export class OptimizedFloatStatementService {
         ORDER BY glt.date DESC, glt.created_at DESC
       `;
 
-      devLog.info(`📊 Found ${glEntries.length} GL entries`);
+      devLog.info(`Found ${glEntries.length} GL entries`);
 
-      // Fetch float_transactions
+      // Debug: Check what's in float_transactions for this account
+      console.log(
+        `Checking float_transactions for account ${floatAccountId}...`
+      );
+      const debugCheck = await sql`
+        SELECT COUNT(*) as total, 
+               COUNT(CASE WHEN account_id IS NOT NULL THEN 1 END) as with_account_id,
+               COUNT(CASE WHEN float_account_id IS NOT NULL THEN 1 END) as with_float_account_id,
+               COUNT(CASE WHEN COALESCE(status, 'completed') = 'completed' THEN 1 END) as with_completed_status
+        FROM float_transactions 
+        WHERE account_id = ${floatAccountId} OR float_account_id = ${floatAccountId}
+      `;
+      console.log(`Float transactions in DB:`, debugCheck[0]);
+
+      // Check sample transaction data
+      const sampleTx = await sql`
+        SELECT transaction_type, type, status, created_at, description, amount
+        FROM float_transactions 
+        WHERE account_id = ${floatAccountId} OR float_account_id = ${floatAccountId}
+        ORDER BY created_at DESC
+        LIMIT 3
+      `;
+      console.log(`Sample transactions:`, sampleTx);
+
+      // Check date filter impact
+      console.log(`Date filter:`, { startDate, endDate });
+
+      // Fetch float_transactions (handle both column name variations)
       const floatTransactions = await sql`
         SELECT 
           ft.id,
           ft.created_at::date as transaction_date,
-          ft.transaction_type as source_transaction_type,
+          COALESCE(ft.transaction_type, ft.type) as source_transaction_type,
           ft.reference as reference,
           ft.description,
+          ft.amount,
           CASE 
-            WHEN ft.transaction_type = 'recharge' THEN ft.amount
-            WHEN ft.transaction_type = 'transfer_in' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'recharge' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'transfer_in' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'commission_payment' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'adjustment' AND ft.amount > 0 THEN ft.amount
             ELSE 0
           END as debit,
           CASE 
-            WHEN ft.transaction_type = 'withdrawal' THEN ft.amount
-            WHEN ft.transaction_type = 'transfer_out' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'withdrawal' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'transfer_out' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'settlement' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'jumia_settlement' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'ezwich_settlement' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'e_zwich_settlement' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'adjustment' AND ft.amount < 0 THEN ABS(ft.amount)
             ELSE 0
           END as credit,
-          ft.processed_by as created_by,
+          COALESCE(ft.processed_by::text, ft.created_by::text) as created_by,
           COALESCE(
             u.first_name || ' ' || u.last_name,
-            ft.processed_by,
             'System'
           ) as processed_by,
           'float_transaction' as entry_source,
           ft.created_at
         FROM float_transactions ft
-        LEFT JOIN users u ON ft.processed_by::text = u.id::text
-        WHERE ft.float_account_id = ${floatAccountId}
-        AND ft.status = 'completed'
+        LEFT JOIN users u ON COALESCE(ft.processed_by::text, ft.created_by::text) = u.id::text
+        WHERE (ft.float_account_id = ${floatAccountId} OR ft.account_id = ${floatAccountId})
+        AND COALESCE(ft.status, 'completed') = 'completed'
         ${floatDateFilter}
         ORDER BY ft.created_at DESC
       `;
 
-      devLog.info(`📊 Found ${floatTransactions.length} float transactions`);
+      console.log(
+        `Float transactions query returned: ${floatTransactions.length} rows`
+      );
+      if (floatTransactions.length > 0) {
+        console.log(`First transaction:`, floatTransactions[0]);
+      }
+
+      devLog.info(`Found ${floatTransactions.length} float transactions`);
 
       // Merge and sort all entries by date
       const allEntries = [...glEntries, ...floatTransactions].sort((a, b) => {
@@ -257,7 +298,7 @@ export class OptimizedFloatStatementService {
       });
 
       devLog.info(
-        `✅ Total merged entries: ${allEntries.length} (${glEntries.length} GL + ${floatTransactions.length} Float)`
+        `Total merged entries: ${allEntries.length} (${glEntries.length} GL + ${floatTransactions.length} Float)`
       );
 
       // Apply pagination AFTER merging

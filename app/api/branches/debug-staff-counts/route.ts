@@ -5,7 +5,7 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export async function GET() {
   try {
-    console.log("🔍 Debugging staff count issues...");
+    console.log("Debugging staff count issues...");
 
     // Check if user_branch_assignments table exists
     const tableExists = await sql`
@@ -85,14 +85,14 @@ export async function GET() {
       usersPerBranch: usersPerBranch,
     };
 
-    console.log("📊 Debug info:", debugInfo);
+    console.log("Debug info:", debugInfo);
 
     return NextResponse.json({
       success: true,
       debugInfo,
     });
   } catch (error) {
-    console.error("❌ Error debugging staff counts:", error);
+    console.error("Error debugging staff counts:", error);
     return NextResponse.json(
       {
         success: false,

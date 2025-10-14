@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     try {
       user = await getCurrentUser(request); // Ensure this is awaited if async
       if (!user) throw new Error("No user found");
-      console.log("👤 Current user:", user);
+      console.log("Current user:", user);
 
       if (user.role === "Admin") {
         effectiveBranchId = filters.branchId || "all";
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log("📊 Fetching transactions with optimized query:", {
+    console.log("Fetching transactions with optimized query:", {
       page,
       limit,
       filters,
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
     let totalCount = 0;
 
     try {
-      console.log("🔍 Executing individual table queries...");
+      console.log("Executing individual table queries...");
 
       // Query each table individually with hardcoded queries
 
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
             ...momoData.map((tx: any) => ({ ...tx, source_module: "momo" }))
           );
         }
-        console.log(`📊 MoMo transactions: ${momoCountNum}`);
+        console.log(`MoMo transactions: ${momoCountNum}`);
       } catch (error) {
         console.warn("⚠️ MoMo transactions query failed:", error);
       }
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
             }))
           );
         }
-        console.log(`📊 Agency banking transactions: ${agencyCountNum}`);
+        console.log(`Agency banking transactions: ${agencyCountNum}`);
       } catch (error) {
         console.warn("⚠️ Agency banking transactions query failed:", error);
       }
@@ -276,7 +276,7 @@ export async function GET(request: NextRequest) {
             }))
           );
         }
-        console.log(`📊 E-Zwich transactions: ${ezwichCountNum}`);
+        console.log(`E-Zwich transactions: ${ezwichCountNum}`);
       } catch (error) {
         console.warn("⚠️ E-Zwich transactions query failed:", error);
       }
@@ -324,7 +324,7 @@ export async function GET(request: NextRequest) {
             ...powerData.map((tx: any) => ({ ...tx, source_module: "power" }))
           );
         }
-        console.log(`📊 Power transactions: ${powerCountNum}`);
+        console.log(`Power transactions: ${powerCountNum}`);
       } catch (error) {
         console.warn("⚠️ Power transactions query failed:", error);
       }
@@ -372,18 +372,18 @@ export async function GET(request: NextRequest) {
             ...jumiaData.map((tx: any) => ({ ...tx, source_module: "jumia" }))
           );
         }
-        console.log(`📊 Jumia transactions: ${jumiaCountNum}`);
+        console.log(`Jumia transactions: ${jumiaCountNum}`);
       } catch (error) {
         console.warn("⚠️ Jumia transactions query failed:", error);
       }
 
-      console.log("✅ All table queries executed successfully");
-      console.log("📊 Raw results:", {
+      console.log("All table queries executed successfully");
+      console.log("Raw results:", {
         transactionsResultLength: transactionsResult.length,
         totalCount,
       });
     } catch (queryError) {
-      console.error("❌ Query execution failed:", queryError);
+      console.error("Query execution failed:", queryError);
       // Set empty results instead of throwing
       transactionsResult = [];
       totalCount = 0;
@@ -395,7 +395,7 @@ export async function GET(request: NextRequest) {
       : [];
     const totalPages = Math.ceil(totalCount / limit);
 
-    console.log("📊 Processed results:", {
+    console.log("Processed results:", {
       transactionsCount: transactions.length,
       totalCount,
       totalPages,

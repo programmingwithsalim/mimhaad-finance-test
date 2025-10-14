@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       includeGL: true, // Always include GL entries
     };
 
-    console.log("🔷 [ENHANCED FLOAT STATEMENT] Generating statement:", {
+    console.log("[ENHANCED FLOAT STATEMENT] Generating statement:", {
       floatAccountId,
       filters,
       userRole: user.role,

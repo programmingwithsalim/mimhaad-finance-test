@@ -156,7 +156,7 @@ export async function POST(
           `;
 
           console.log(
-            "✅ Created GL entries for commission approval - Debit: " +
+            "Created GL entries for commission approval - Debit: " +
               floatGLAccount.name +
               ", Credit: " +
               arAccount.name

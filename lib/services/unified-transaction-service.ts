@@ -101,7 +101,7 @@ export class UnifiedTransactionService {
   ): Promise<TransactionResult> {
     try {
       console.log(
-        `🔄 Processing ${data.serviceType} ${data.transactionType} transaction...`
+        `Processing ${data.serviceType} ${data.transactionType} transaction...`
       );
 
       // 1. Validate transaction data
@@ -212,7 +212,7 @@ export class UnifiedTransactionService {
       const cashTill = cashTillAccount[0];
 
       // Debug logging to confirm which account is being used
-      console.log(`🔍 [MOMO TRANSACTION] Using float account:`, {
+      console.log(`[MOMO TRANSACTION] Using float account:`, {
         id: momoFloat.id,
         provider: momoFloat.provider,
         accountNumber: momoFloat.account_number,
@@ -336,22 +336,19 @@ export class UnifiedTransactionService {
         const customerPhone = data.phoneNumber;
         const customerName = data.customerName || "Customer";
 
-        console.log(
-          "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
-          {
-            phoneNumber: data.phoneNumber,
-            finalCustomerPhone: customerPhone,
-            customerName: customerName,
-            serviceType: data.serviceType,
-            provider: data.provider,
-            transactionId: transaction[0].id,
-            reference: data.reference || transaction[0].id,
-            userId: data.userId,
-            processedBy: data.processedBy,
-          }
-        );
+        console.log("[UNIFIED TRANSACTION AUDIT] Customer notification data:", {
+          phoneNumber: data.phoneNumber,
+          finalCustomerPhone: customerPhone,
+          customerName: customerName,
+          serviceType: data.serviceType,
+          provider: data.provider,
+          transactionId: transaction[0].id,
+          reference: data.reference || transaction[0].id,
+          userId: data.userId,
+          processedBy: data.processedBy,
+        });
 
-        console.log("🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+        console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
           hasPhoneNumber: !!data.phoneNumber,
           phoneNumberLength: data.phoneNumber?.length,
           phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
@@ -572,22 +569,19 @@ export class UnifiedTransactionService {
         const customerPhone = data.phoneNumber;
         const customerName = data.customerName || "Customer";
 
-        console.log(
-          "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
-          {
-            phoneNumber: data.phoneNumber,
-            finalCustomerPhone: customerPhone,
-            customerName: customerName,
-            serviceType: data.serviceType,
-            provider: data.provider,
-            transactionId: transaction[0].id,
-            reference: data.reference || transaction[0].id,
-            userId: data.userId,
-            processedBy: data.processedBy,
-          }
-        );
+        console.log("[UNIFIED TRANSACTION AUDIT] Customer notification data:", {
+          phoneNumber: data.phoneNumber,
+          finalCustomerPhone: customerPhone,
+          customerName: customerName,
+          serviceType: data.serviceType,
+          provider: data.provider,
+          transactionId: transaction[0].id,
+          reference: data.reference || transaction[0].id,
+          userId: data.userId,
+          processedBy: data.processedBy,
+        });
 
-        console.log("🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+        console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
           hasPhoneNumber: !!data.phoneNumber,
           phoneNumberLength: data.phoneNumber?.length,
           phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
@@ -714,7 +708,7 @@ export class UnifiedTransactionService {
           const customerName = data.customerName || "Customer";
 
           console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
+            "[UNIFIED TRANSACTION AUDIT] Customer notification data:",
             {
               phoneNumber: data.phoneNumber,
               finalCustomerPhone: customerPhone,
@@ -728,14 +722,11 @@ export class UnifiedTransactionService {
             }
           );
 
-          console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:",
-            {
-              hasPhoneNumber: !!data.phoneNumber,
-              phoneNumberLength: data.phoneNumber?.length,
-              phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
-            }
-          );
+          console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+            hasPhoneNumber: !!data.phoneNumber,
+            phoneNumberLength: data.phoneNumber?.length,
+            phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
+          });
 
           await CustomerNotificationService.sendTransactionSuccessNotification(
             customerPhone,
@@ -868,7 +859,7 @@ export class UnifiedTransactionService {
           const customerName = data.customerName || "Customer";
 
           console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
+            "[UNIFIED TRANSACTION AUDIT] Customer notification data:",
             {
               phoneNumber: data.phoneNumber,
               finalCustomerPhone: customerPhone,
@@ -882,14 +873,11 @@ export class UnifiedTransactionService {
             }
           );
 
-          console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:",
-            {
-              hasPhoneNumber: !!data.phoneNumber,
-              phoneNumberLength: data.phoneNumber?.length,
-              phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
-            }
-          );
+          console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+            hasPhoneNumber: !!data.phoneNumber,
+            phoneNumberLength: data.phoneNumber?.length,
+            phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
+          });
 
           await CustomerNotificationService.sendTransactionSuccessNotification(
             customerPhone,
@@ -1063,22 +1051,19 @@ export class UnifiedTransactionService {
         const customerPhone = data.phoneNumber;
         const customerName = data.customerName || "Customer";
 
-        console.log(
-          "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
-          {
-            phoneNumber: data.phoneNumber,
-            finalCustomerPhone: customerPhone,
-            customerName: customerName,
-            serviceType: data.serviceType,
-            provider: data.provider,
-            transactionId: transaction[0].id,
-            reference: data.reference || transaction[0].id,
-            userId: data.userId,
-            processedBy: data.processedBy,
-          }
-        );
+        console.log("[UNIFIED TRANSACTION AUDIT] Customer notification data:", {
+          phoneNumber: data.phoneNumber,
+          finalCustomerPhone: customerPhone,
+          customerName: customerName,
+          serviceType: data.serviceType,
+          provider: data.provider,
+          transactionId: transaction[0].id,
+          reference: data.reference || transaction[0].id,
+          userId: data.userId,
+          processedBy: data.processedBy,
+        });
 
-        console.log("🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+        console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
           hasPhoneNumber: !!data.phoneNumber,
           phoneNumberLength: data.phoneNumber?.length,
           phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
@@ -1159,7 +1144,7 @@ export class UnifiedTransactionService {
           const customerName = data.customerName || "Customer";
 
           console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
+            "[UNIFIED TRANSACTION AUDIT] Customer notification data:",
             {
               phoneNumber: data.phoneNumber,
               finalCustomerPhone: customerPhone,
@@ -1173,14 +1158,11 @@ export class UnifiedTransactionService {
             }
           );
 
-          console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:",
-            {
-              hasPhoneNumber: !!data.phoneNumber,
-              phoneNumberLength: data.phoneNumber?.length,
-              phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
-            }
-          );
+          console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+            hasPhoneNumber: !!data.phoneNumber,
+            phoneNumberLength: data.phoneNumber?.length,
+            phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
+          });
 
           await CustomerNotificationService.sendTransactionSuccessNotification(
             customerPhone,
@@ -1314,7 +1296,7 @@ export class UnifiedTransactionService {
           const customerName = data.customerName || "Customer";
 
           console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Customer notification data:",
+            "[UNIFIED TRANSACTION AUDIT] Customer notification data:",
             {
               phoneNumber: data.phoneNumber,
               finalCustomerPhone: customerPhone,
@@ -1328,14 +1310,11 @@ export class UnifiedTransactionService {
             }
           );
 
-          console.log(
-            "🔍 [UNIFIED TRANSACTION AUDIT] Transaction data source:",
-            {
-              hasPhoneNumber: !!data.phoneNumber,
-              phoneNumberLength: data.phoneNumber?.length,
-              phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
-            }
-          );
+          console.log("[UNIFIED TRANSACTION AUDIT] Transaction data source:", {
+            hasPhoneNumber: !!data.phoneNumber,
+            phoneNumberLength: data.phoneNumber?.length,
+            phoneNumberStartsWith: data.phoneNumber?.substring(0, 4),
+          });
 
           await CustomerNotificationService.sendTransactionSuccessNotification(
             customerPhone,
@@ -1512,7 +1491,7 @@ export class UnifiedTransactionService {
     processedBy: string
   ): Promise<TransactionResult> {
     try {
-      console.log(`🔄 Reversing ${sourceModule} transaction: ${transactionId}`);
+      console.log(`Reversing ${sourceModule} transaction: ${transactionId}`);
 
       // Get the original transaction
       const transaction = await this.getTransactionById(
@@ -2189,7 +2168,7 @@ export class UnifiedTransactionService {
     const totalAmount = amount + fee;
 
     console.log(
-      `🔄 [${sourceModule.toUpperCase()}] Parsed amounts - Amount: ${amount}, Fee: ${fee}, Commission: ${commission}, Total: ${totalAmount}`
+      `[${sourceModule.toUpperCase()}] Parsed amounts - Amount: ${amount}, Fee: ${fee}, Commission: ${commission}, Total: ${totalAmount}`
     );
 
     // Handle cash in till reversal for all service types
@@ -2204,7 +2183,7 @@ export class UnifiedTransactionService {
         AND is_active = true
       `;
       console.log(
-        `🔄 [${sourceModule.toUpperCase()}] Reversed cash till balance by ${cashTillAmount}`
+        `[${sourceModule.toUpperCase()}] Reversed cash till balance by ${cashTillAmount}`
       );
     }
 
@@ -2221,7 +2200,7 @@ export class UnifiedTransactionService {
             WHERE id = ${transaction.float_account_id}
           `;
           console.log(
-            `🔄 [${sourceModule.toUpperCase()}] Reversed MoMo float balance by ${floatAmount}`
+            `[${sourceModule.toUpperCase()}] Reversed MoMo float balance by ${floatAmount}`
           );
         }
         break;
@@ -2248,13 +2227,13 @@ export class UnifiedTransactionService {
               WHERE id = ${agencyAccount[0].id}
             `;
             console.log(
-              `🔄 [${sourceModule.toUpperCase()}] Reversed agency banking float balance by ${floatAmount} for provider: ${
+              `[${sourceModule.toUpperCase()}] Reversed agency banking float balance by ${floatAmount} for provider: ${
                 transaction.partner_bank || transaction.provider
               }`
             );
           } else {
             console.error(
-              `🔄 [${sourceModule.toUpperCase()}] Agency banking float account not found for provider: ${
+              `[${sourceModule.toUpperCase()}] Agency banking float account not found for provider: ${
                 transaction.partner_bank || transaction.provider
               }`
             );
@@ -2296,7 +2275,7 @@ export class UnifiedTransactionService {
             WHERE id = ${ezwichSettlementAccount[0].id}
           `;
           console.log(
-            `🔄 [${sourceModule.toUpperCase()}] Reversed E-Zwich settlement balance by ${totalAmount}`
+            `[${sourceModule.toUpperCase()}] Reversed E-Zwich settlement balance by ${totalAmount}`
           );
 
           // Get cash in till account
@@ -2320,7 +2299,7 @@ export class UnifiedTransactionService {
             WHERE id = ${cashTillAccount[0].id}
           `;
           console.log(
-            `🔄 [${sourceModule.toUpperCase()}] Reversed cash in till balance by ${totalAmount}`
+            `[${sourceModule.toUpperCase()}] Reversed cash in till balance by ${totalAmount}`
           );
         } else {
           // Card issuance reversal: Cash in till decreases
@@ -2343,7 +2322,7 @@ export class UnifiedTransactionService {
               WHERE id = ${cashTillAccount[0].id}
             `;
             console.log(
-              `🔄 [${sourceModule.toUpperCase()}] Reversed cash in till balance by ${totalAmount}`
+              `[${sourceModule.toUpperCase()}] Reversed cash in till balance by ${totalAmount}`
             );
           }
         }
@@ -2361,7 +2340,7 @@ export class UnifiedTransactionService {
             WHERE id = ${transaction.float_account_id}
           `;
           console.log(
-            `🔄 [${sourceModule.toUpperCase()}] Reversed Power float balance by ${powerAmount}`
+            `[${sourceModule.toUpperCase()}] Reversed Power float balance by ${powerAmount}`
           );
         }
 
@@ -2382,7 +2361,7 @@ export class UnifiedTransactionService {
             WHERE id = ${cashTillAccount[0].id}
           `;
           console.log(
-            `🔄 [${sourceModule.toUpperCase()}] Reversed cash in till balance by ${totalAmount}`
+            `[${sourceModule.toUpperCase()}] Reversed cash in till balance by ${totalAmount}`
           );
         }
         break;
@@ -2398,14 +2377,14 @@ export class UnifiedTransactionService {
             WHERE id = ${transaction.float_account_id}
           `;
           console.log(
-            `🔄 [${sourceModule.toUpperCase()}] Reversed Jumia float balance by ${floatAmount}`
+            `[${sourceModule.toUpperCase()}] Reversed Jumia float balance by ${floatAmount}`
           );
         }
         break;
 
       default:
         console.warn(
-          `🔄 [${sourceModule.toUpperCase()}] No float reversal logic for source module: ${sourceModule}`
+          `[${sourceModule.toUpperCase()}] No float reversal logic for source module: ${sourceModule}`
         );
     }
   }
@@ -2486,7 +2465,7 @@ export class UnifiedTransactionService {
     processedBy: string
   ): Promise<TransactionResult> {
     try {
-      console.log(`🔄 Completing ${sourceModule} transaction:`, transactionId);
+      console.log(`Completing ${sourceModule} transaction:`, transactionId);
 
       // Get the transaction details
       const transaction = await this.getTransactionById(
@@ -2567,7 +2546,7 @@ export class UnifiedTransactionService {
     processedBy: string
   ): Promise<TransactionResult> {
     try {
-      console.log(`🔄 Delivering ${sourceModule} transaction:`, transactionId);
+      console.log(`Delivering ${sourceModule} transaction:`, transactionId);
 
       // Get the transaction details
       const transaction = await this.getTransactionById(
@@ -2904,7 +2883,7 @@ export class UnifiedTransactionService {
 
       default:
         console.log(
-          `🔄 [${sourceModule.toUpperCase()}] No specific float adjustment for service type: ${sourceModule}`
+          `[${sourceModule.toUpperCase()}] No specific float adjustment for service type: ${sourceModule}`
         );
         break;
     }
@@ -2932,7 +2911,7 @@ export class UnifiedTransactionService {
     error?: string;
   }> {
     try {
-      console.log(`📋 Fetching transactions for branch: ${branchId}`);
+      console.log(`Fetching transactions for branch: ${branchId}`);
 
       let transactions: any[] = [];
       let totalCount = 0;
@@ -3445,7 +3424,7 @@ export class UnifiedTransactionService {
   }> {
     try {
       console.log(
-        `📊 Fetching statistics for branch: ${branchId}, service: ${serviceType}`
+        `Fetching statistics for branch: ${branchId}, service: ${serviceType}`
       );
 
       // Get transactions using the unified getTransactions method
@@ -3620,7 +3599,7 @@ export class UnifiedTransactionService {
     processedBy: string
   ): Promise<TransactionResult> {
     try {
-      console.log(`🔄 Disbursing ${sourceModule} transaction:`, transactionId);
+      console.log(`Disbursing ${sourceModule} transaction:`, transactionId);
 
       // Get the transaction details
       const transaction = await this.getTransactionById(

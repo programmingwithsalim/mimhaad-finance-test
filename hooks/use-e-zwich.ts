@@ -132,13 +132,13 @@ export function useCardBatches() {
             (batch: any) => batch.branch_id === selectedBranchId
           );
           console.log(
-            `🔍 [ADMIN] Filtered to ${filteredBatches.length} batches for branch ${selectedBranchId}`
+            `[ADMIN] Filtered to ${filteredBatches.length} batches for branch ${selectedBranchId}`
           );
         }
 
         setBatches(filteredBatches);
         console.log(
-          `✅ Successfully loaded ${filteredBatches.length} batches (${
+          `Successfully loaded ${filteredBatches.length} batches (${
             result.data?.length || 0
           } total)`
         );
@@ -150,7 +150,7 @@ export function useCardBatches() {
         setBatches([]);
       }
     } catch (err) {
-      console.error("❌ Error fetching batches:", err);
+      console.error("Error fetching batches:", err);
       const errorMsg =
         err instanceof Error ? err.message : "Unknown error occurred";
       setError(errorMsg);
@@ -225,14 +225,14 @@ export function useCardBatches() {
       console.log("Create batch result:", result);
 
       if (result.success) {
-        console.log("✅ Batch created successfully");
+        console.log("Batch created successfully");
         await fetchBatches(); // Refresh the list
         return result.data;
       } else {
         throw new Error(result.error || "Failed to create batch");
       }
     } catch (err) {
-      console.error("❌ Error creating batch:", err);
+      console.error("Error creating batch:", err);
       throw err;
     }
   };
@@ -253,7 +253,7 @@ export function useCardBatches() {
     }
   ) => {
     try {
-      console.log("🔄 Updating batch with data:", batchData);
+      console.log("Updating batch with data:", batchData);
 
       const response = await fetch(`/api/e-zwich/batches`, {
         method: "PUT",
@@ -281,14 +281,14 @@ export function useCardBatches() {
       console.log("Update batch result:", result);
 
       if (result.success) {
-        console.log("✅ Batch updated successfully");
+        console.log("Batch updated successfully");
         await fetchBatches(); // Refresh the list
         return result.data;
       } else {
         throw new Error(result.error || "Failed to update batch");
       }
     } catch (err) {
-      console.error("❌ Error updating batch:", err);
+      console.error("Error updating batch:", err);
       throw err;
     }
   };
@@ -318,14 +318,14 @@ export function useCardBatches() {
       console.log("Delete batch result:", result);
 
       if (result.success) {
-        console.log("✅ Batch deleted successfully");
+        console.log("Batch deleted successfully");
         await fetchBatches(); // Refresh the list
         return result;
       } else {
         throw new Error(result.error || "Failed to delete batch");
       }
     } catch (err) {
-      console.error("❌ Error deleting batch:", err);
+      console.error("Error deleting batch:", err);
       throw err;
     }
   };

@@ -55,14 +55,14 @@ export class CustomerNotificationService {
       // Get system SMS configuration
       const smsConfig = await this.getSystemSMSConfig();
 
-      console.log("📧 SMS Configuration:", smsConfig);
+      console.log("SMS Configuration:", smsConfig);
 
       if (!smsConfig) {
         await logger.warn(
           LogCategory.TRANSACTION,
           "No SMS configuration found, skipping customer notification"
         );
-        console.log("❌ No SMS configuration found in system_settings");
+        console.log("No SMS configuration found in system_settings");
         return { success: false, error: "No SMS configuration found" };
       }
 
@@ -89,7 +89,7 @@ export class CustomerNotificationService {
           type: data.type,
         }
       );
-      console.error("❌ Customer notification error:", error);
+      console.error("Customer notification error:", error);
       return {
         success: false,
         error:
@@ -177,7 +177,7 @@ export class CustomerNotificationService {
    */
   private static async getSystemSMSConfig() {
     try {
-      console.log("🔍 Fetching SMS configuration from system_config...");
+      console.log("Fetching SMS configuration from system_config...");
 
       // First, get the active SMS provider
       const providerConfig = await sql`
@@ -186,10 +186,10 @@ export class CustomerNotificationService {
         WHERE config_key = 'sms_provider'
       `;
 
-      console.log("📋 Provider config from database:", providerConfig);
+      console.log("Provider config from database:", providerConfig);
 
       if (providerConfig.length === 0) {
-        console.log("❌ No SMS provider found in system_config table");
+        console.log("No SMS provider found in system_config table");
         return null;
       }
 
@@ -218,7 +218,7 @@ export class CustomerNotificationService {
           "smsonlinegh_sms_test_mode",
         ];
       } else {
-        console.log("❌ Unsupported SMS provider:", provider);
+        console.log("Unsupported SMS provider:", provider);
         return null;
       }
 
@@ -228,10 +228,10 @@ export class CustomerNotificationService {
         WHERE config_key = ANY(${configKeys})
       `;
 
-      console.log("📋 Raw SMS config from database:", config);
+      console.log("Raw SMS config from database:", config);
 
       if (config.length === 0) {
-        console.log("❌ No SMS settings found in system_config table");
+        console.log("No SMS settings found in system_config table");
         return null;
       }
 
@@ -263,10 +263,10 @@ export class CustomerNotificationService {
             : configObj.smsonlinegh_sms_test_mode === "true",
       };
 
-      console.log("✅ Final SMS config:", result);
+      console.log("Final SMS config:", result);
       return result;
     } catch (error) {
-      console.error("❌ Error getting system SMS config:", error);
+      console.error("Error getting system SMS config:", error);
       return null;
     }
   }
@@ -291,7 +291,7 @@ export class CustomerNotificationService {
       });
 
       if (!apiKey || !senderId || !phone) {
-        console.log("❌ Missing SMS configuration:", {
+        console.log("Missing SMS configuration:", {
           apiKey: !!apiKey,
           senderId: !!senderId,
           phone: !!phone,
@@ -355,7 +355,7 @@ export class CustomerNotificationService {
         url.searchParams.set("to", phone);
         url.searchParams.set("content", data.message);
 
-        console.log("🔐 Hubtel URL Authentication:", {
+        console.log("Hubtel URL Authentication:", {
           clientId: clientId ? "***" : "MISSING",
           clientSecret: clientSecret ? "***" : "MISSING",
           senderId,
@@ -402,7 +402,7 @@ export class CustomerNotificationService {
         };
       }
     } catch (error) {
-      console.error("❌ Error sending SMS notification:", error);
+      console.error("Error sending SMS notification:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",

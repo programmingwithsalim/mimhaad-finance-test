@@ -197,6 +197,12 @@ const defaultGLAccounts = [
     description: "Bank fees and charges",
   },
   {
+    code: "5011",
+    name: "Amortization Expense",
+    type: "Expense",
+    description: "Amortization of intangible assets",
+  },
+  {
     code: "5008",
     name: "Travel Expense",
     type: "Expense",

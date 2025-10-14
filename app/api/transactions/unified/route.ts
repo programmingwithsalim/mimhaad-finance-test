@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       metadata: data.metadata || {},
     };
 
-    console.log(`🔄 Processing ${transactionData.serviceType} transaction:`, {
+    console.log(`Processing ${transactionData.serviceType} transaction:`, {
       type: transactionData.transactionType,
       amount: transactionData.amount,
       customer: transactionData.customerName,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     if (result.success) {
       console.log(
-        `✅ ${transactionData.serviceType} transaction processed successfully:`,
+        `${transactionData.serviceType} transaction processed successfully:`,
         result.transaction?.id
       );
 
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
       });
     } else {
       console.error(
-        `❌ ${transactionData.serviceType} transaction failed:`,
+        `${transactionData.serviceType} transaction failed:`,
         result.error
       );
 
@@ -227,7 +227,7 @@ export async function PUT(request: NextRequest) {
         );
     }
   } catch (error) {
-    console.error("❌ Transaction management failed:", error);
+    console.error("Transaction management failed:", error);
     return NextResponse.json(
       {
         success: false,
@@ -323,7 +323,7 @@ export async function GET(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("❌ Transaction fetching failed:", error);
+    console.error("Transaction fetching failed:", error);
     return NextResponse.json(
       {
         success: false,

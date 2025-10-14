@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       ? sql`AND b.inventory_type = ${inventoryType}`
       : sql``;
 
-    console.log("📊 [INVENTORY] Generating valuation report...");
+    console.log("[INVENTORY] Generating valuation report...");
 
     // Get detailed valuation by inventory type
     const valuationByType = await sql`
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
         ) / 100,
     };
 
-    console.log(`✅ [INVENTORY] Valuation report generated:`, {
+    console.log(`[INVENTORY] Valuation report generated:`, {
       batches: detailedBatches.length,
       value: totalCurrentValue,
     });
@@ -204,7 +204,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error("❌ [INVENTORY] Error generating valuation report:", error);
+    console.error("[INVENTORY] Error generating valuation report:", error);
     return NextResponse.json(
       {
         success: false,

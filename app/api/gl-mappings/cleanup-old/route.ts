@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("🔍 Analyzing GL mappings for provider naming...");
+    console.log("Analyzing GL mappings for provider naming...");
 
     // Find GL accounts that use the old "DEVMTN" naming convention
     const oldAccounts = await sql`
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     `;
 
     console.log(
-      `📋 Found ${oldAccounts.length} GL accounts with old "DEVMTN" naming`
+      `Found ${oldAccounts.length} GL accounts with old "DEVMTN" naming`
     );
 
     // Find GL mappings that reference these old accounts
@@ -40,9 +40,7 @@ export async function POST(request: NextRequest) {
       ORDER BY gm.transaction_type, gm.mapping_type
     `;
 
-    console.log(
-      `📋 Found ${oldMappings.length} GL mappings using old accounts`
-    );
+    console.log(`Found ${oldMappings.length} GL mappings using old accounts`);
 
     // Find all GL mappings to show the current state
     const allMappings = await sql`
@@ -53,7 +51,7 @@ export async function POST(request: NextRequest) {
       ORDER BY gm.transaction_type, gm.mapping_type, ga.code
     `;
 
-    console.log("📊 Analysis completed successfully!");
+    console.log("Analysis completed successfully!");
 
     return NextResponse.json({
       success: true,
@@ -82,7 +80,7 @@ export async function POST(request: NextRequest) {
         "Keep existing mappings for backward compatibility. New provider-specific mappings will be created automatically when transactions are processed with different providers.",
     });
   } catch (error) {
-    console.error("❌ Error during analysis:", error);
+    console.error("Error during analysis:", error);
     return NextResponse.json(
       {
         success: false,

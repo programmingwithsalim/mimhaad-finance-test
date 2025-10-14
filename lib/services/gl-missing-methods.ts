@@ -37,7 +37,7 @@ export class MissingGLMethods {
   }): Promise<{ success: boolean; glTransactionId?: string; error?: string }> {
     try {
       console.log(
-        "🔷 [GL] Creating reversal GL entries for " +
+        "[GL] Creating reversal GL entries for " +
           sourceModule +
           " transaction:",
         transactionId
@@ -131,7 +131,7 @@ export class MissingGLMethods {
         // Skip zero-value entries
         if (debit === 0 && credit === 0) continue;
 
-        console.log(`🔷 [GL] Creating journal entry:`, {
+        console.log(`[GL] Creating journal entry:`, {
           accountId: entry.accountId,
           accountCode: entry.accountCode,
           debit: debit,
@@ -179,7 +179,7 @@ export class MissingGLMethods {
       });
 
       console.log(
-        "🔷 [GL] Reversal GL entries created successfully for " +
+        "[GL] Reversal GL entries created successfully for " +
           sourceModule +
           " transaction: " +
           transactionId
@@ -231,7 +231,7 @@ export class MissingGLMethods {
   }): Promise<{ success: boolean; glTransactionId?: string; error?: string }> {
     try {
       console.log(
-        "🔷 [GL] Creating adjustment GL entries for " +
+        "[GL] Creating adjustment GL entries for " +
           sourceModule +
           " transaction:",
         transactionId
@@ -384,7 +384,7 @@ export class MissingGLMethods {
       });
 
       console.log(
-        "🔷 [GL] Adjustment GL entries created successfully for " +
+        "[GL] Adjustment GL entries created successfully for " +
           sourceModule +
           " transaction: " +
           transactionId
@@ -846,7 +846,7 @@ export class MissingGLMethods {
       const credit = Number(entry.credit) || 0;
       const balanceChange = credit - debit;
 
-      console.log(`🔷 [GL] Updating account balance:`, {
+      console.log(`[GL] Updating account balance:`, {
         accountId: entry.accountId,
         debit: debit,
         credit: credit,

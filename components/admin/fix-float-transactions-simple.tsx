@@ -1,51 +1,57 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useToast } from "@/hooks/use-toast"
-import { RefreshCw, Database, CheckCircle } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { RefreshCw, Database, CheckCircle } from "lucide-react";
 
 export function FixFloatTransactionsSimple() {
-  const [isFixing, setIsFixing] = useState(false)
-  const [result, setResult] = useState<any>(null)
-  const { toast } = useToast()
+  const [isFixing, setIsFixing] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const { toast } = useToast();
 
   const fixSchema = async () => {
-    setIsFixing(true)
-    setResult(null)
+    setIsFixing(true);
+    setResult(null);
 
     try {
       const response = await fetch("/api/debug/fix-float-transactions-simple", {
         method: "POST",
-      })
+      });
 
-      const data = await response.json()
-      setResult(data)
+      const data = await response.json();
+      setResult(data);
 
       if (data.success) {
         toast({
           title: "Schema Fixed",
           description: "Float transactions table updated successfully",
-        })
+        });
       } else {
         toast({
           title: "Fix Failed",
           description: data.error || "Failed to fix schema",
           variant: "destructive",
-        })
+        });
       }
     } catch (error) {
-      console.error("Error fixing schema:", error)
+      console.error("Error fixing schema:", error);
       toast({
         title: "Error",
         description: "Failed to fix float transactions schema",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsFixing(false)
+      setIsFixing(false);
     }
-  }
+  };
 
   return (
     <Card>
@@ -55,7 +61,8 @@ export function FixFloatTransactionsSimple() {
           Fix Float Transactions Schema
         </CardTitle>
         <CardDescription>
-          Add missing columns (balance_before, balance_after, updated_at) to float_transactions table
+          Add missing columns (balance_before, balance_after, updated_at) to
+          float_transactions table
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -75,7 +82,9 @@ export function FixFloatTransactionsSimple() {
 
         {result && (
           <div className="mt-4 p-4 rounded-lg bg-muted">
-            <h4 className="font-medium mb-2">{result.success ? "✅ Success" : "❌ Error"}</h4>
+            <h4 className="font-medium mb-2">
+              {result.success ? "Success" : "Error"}
+            </h4>
             <p className="text-sm mb-2">{result.message || result.error}</p>
             {result.columns && (
               <div>
@@ -93,5 +102,5 @@ export function FixFloatTransactionsSimple() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

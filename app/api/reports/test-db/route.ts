@@ -6,19 +6,19 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export async function GET(request: Request) {
   try {
-    console.log("🔍 Test DB API called");
+    console.log("Test DB API called");
 
     // Test authentication
     let user;
     try {
       user = await getCurrentUser(request);
-      console.log("👤 User authenticated:", {
+      console.log("User authenticated:", {
         name: user.name,
         role: user.role,
         branchId: user.branchId,
       });
     } catch (error) {
-      console.error("❌ Authentication failed:", error);
+      console.error("Authentication failed:", error);
       return NextResponse.json(
         { success: false, error: "Authentication required" },
         { status: 401 }
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
     // Test database connection
     try {
       const testResult = await sql`SELECT 1 as test`;
-      console.log("✅ Database connection successful:", testResult);
+      console.log("Database connection successful:", testResult);
 
       // Test if tables exist
       const tableTest = await sql`
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
           EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'expenses') as expenses_exists
       `;
 
-      console.log("📋 Table existence check:", tableTest[0]);
+      console.log("Table existence check:", tableTest[0]);
 
       return NextResponse.json({
         success: true,
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         },
       });
     } catch (dbError) {
-      console.error("❌ Database connection failed:", dbError);
+      console.error("Database connection failed:", dbError);
       return NextResponse.json(
         {
           success: false,
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
       );
     }
   } catch (error) {
-    console.error("❌ Test DB API error:", error);
+    console.error("Test DB API error:", error);
     return NextResponse.json(
       {
         success: false,

@@ -84,7 +84,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const feeData = await request.json();
-    console.log("📝 [FEE-CONFIG] Received fee data:", feeData);
+    console.log("[FEE-CONFIG] Received fee data:", feeData);
 
     const {
       service_type,
@@ -104,9 +104,7 @@ export async function POST(request: Request) {
       !fee_type ||
       fee_value === undefined
     ) {
-      console.log(
-        "❌ [FEE-CONFIG] Validation failed - missing required fields"
-      );
+      console.log("[FEE-CONFIG] Validation failed - missing required fields");
       return NextResponse.json(
         {
           success: false,
@@ -120,7 +118,7 @@ export async function POST(request: Request) {
     // Validate fee_type
     if (!["percentage", "fixed", "tiered"].includes(fee_type)) {
       console.log(
-        "❌ [FEE-CONFIG] Validation failed - invalid fee_type:",
+        "[FEE-CONFIG] Validation failed - invalid fee_type:",
         fee_type
       );
       return NextResponse.json(
@@ -132,7 +130,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("🔍 [FEE-CONFIG] Checking for existing configuration...");
+    console.log("[FEE-CONFIG] Checking for existing configuration...");
 
     // Check if configuration already exists
     const existingConfig = await sql`
@@ -141,14 +139,11 @@ export async function POST(request: Request) {
       AND transaction_type = ${transaction_type}
     `;
 
-    console.log(
-      "🔍 [FEE-CONFIG] Existing configs found:",
-      existingConfig.length
-    );
+    console.log("[FEE-CONFIG] Existing configs found:", existingConfig.length);
 
     if (existingConfig.length > 0) {
       // Update existing configuration
-      console.log("🔄 [FEE-CONFIG] Updating existing configuration...");
+      console.log("[FEE-CONFIG] Updating existing configuration...");
       const result = await sql`
         UPDATE fee_config SET
           fee_type = ${fee_type},
@@ -163,7 +158,7 @@ export async function POST(request: Request) {
         RETURNING *
       `;
 
-      console.log("✅ [FEE-CONFIG] Updated configuration:", result[0]);
+      console.log("[FEE-CONFIG] Updated configuration:", result[0]);
 
       return NextResponse.json({
         success: true,
@@ -202,7 +197,7 @@ export async function POST(request: Request) {
         RETURNING *
       `;
 
-      console.log("✅ [FEE-CONFIG] Created new configuration:", result[0]);
+      console.log("[FEE-CONFIG] Created new configuration:", result[0]);
 
       return NextResponse.json({
         success: true,
@@ -211,7 +206,7 @@ export async function POST(request: Request) {
       });
     }
   } catch (error) {
-    console.error("❌ [FEE-CONFIG] Error creating/updating fee config:", error);
+    console.error("[FEE-CONFIG] Error creating/updating fee config:", error);
     return NextResponse.json(
       {
         success: false,

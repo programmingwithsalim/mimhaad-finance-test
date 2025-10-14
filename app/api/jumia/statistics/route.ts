@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const dateFrom = searchParams.get("dateFrom");
     const dateTo = searchParams.get("dateTo");
 
-    console.log("📊 Fetching Jumia statistics with filters:", {
+    console.log("Fetching Jumia statistics with filters:", {
       branchId,
       dateFrom,
       dateTo,

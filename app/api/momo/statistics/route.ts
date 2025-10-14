@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get("dateTo");
     const provider = searchParams.get("provider");
 
-    console.log("📊 Fetching MoMo statistics with filters:", {
+    console.log("Fetching MoMo statistics with filters:", {
       branchId,
       dateFrom,
       dateTo,
@@ -89,14 +89,14 @@ export async function GET(request: NextRequest) {
       lowFloatAlerts: Number(lowFloatAlerts[0]?.alert_count || 0),
     };
 
-    console.log("✅ MoMo statistics fetched successfully:", statistics);
+    console.log("MoMo statistics fetched successfully:", statistics);
 
     return NextResponse.json({
       success: true,
       data: statistics,
     });
   } catch (error) {
-    console.error("❌ Error fetching MoMo statistics:", error);
+    console.error("Error fetching MoMo statistics:", error);
     return NextResponse.json(
       {
         success: false,

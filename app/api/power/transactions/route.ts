@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
     const amount = Number(body.amount);
     const fee = Number(body.fee || 0);
 
-    console.log("🔍 [POWER TRANSACTION] Payment details:", {
+    console.log("[POWER TRANSACTION] Payment details:", {
       amount,
       fee,
       paymentMethod: body.payment_method,
@@ -315,7 +315,7 @@ export async function POST(request: NextRequest) {
 
     // First, debit the power provider's float account by the amount
     console.log(
-      "🔍 [POWER TRANSACTION] Debiting power provider float account:",
+      "[POWER TRANSACTION] Debiting power provider float account:",
       body.provider
     );
     const powerProviderDebit = await sql`
@@ -336,7 +336,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(
-      "🔍 [POWER TRANSACTION] Power provider float debited:",
+      "[POWER TRANSACTION] Power provider float debited:",
       powerProviderDebit[0]
     );
 
@@ -344,7 +344,7 @@ export async function POST(request: NextRequest) {
     if (body.payment_method === "cash") {
       // For cash payments, credit both amount and fee to cash-in-till
       console.log(
-        "🔍 [POWER TRANSACTION] Cash payment - crediting amount + fee to cash-in-till"
+        "[POWER TRANSACTION] Cash payment - crediting amount + fee to cash-in-till"
       );
       await sql`
         UPDATE float_accounts
@@ -358,7 +358,7 @@ export async function POST(request: NextRequest) {
       // For non-cash payments, credit amount to selected float account and fee to cash-in-till
       if (body.payment_account_id) {
         console.log(
-          "🔍 [POWER TRANSACTION] Non-cash payment - crediting amount to payment account:",
+          "[POWER TRANSACTION] Non-cash payment - crediting amount to payment account:",
           body.payment_account_id
         );
         // Credit amount to the selected payment account
@@ -371,7 +371,7 @@ export async function POST(request: NextRequest) {
 
         // Credit fee to cash-in-till
         console.log(
-          "🔍 [POWER TRANSACTION] Non-cash payment - crediting fee to cash-in-till"
+          "[POWER TRANSACTION] Non-cash payment - crediting fee to cash-in-till"
         );
         await sql`
           UPDATE float_accounts

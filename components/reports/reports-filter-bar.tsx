@@ -13,12 +13,14 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   RefreshCw,
   Filter,
   X,
   Calendar as CalendarIcon,
   Building2,
+  ChevronRight,
 } from "lucide-react";
 import { format, subDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -65,118 +67,161 @@ export function ReportsFilterBar({
   };
 
   return (
-    <div className="bg-background border-b border-muted shadow-sm sm:px-3 py-3 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
-      {/* Filter Icon (mobile) */}
-      <span className="sm:hidden flex items-center text-muted-foreground">
-        <Filter className="h-5 w-5 mr-1" /> Filters
-      </span>
-      {/* Date Range Picker */}
-      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2 min-w-[180px]"
-            aria-label="Select date range"
-          >
-            <CalendarIcon className="h-4 w-4" />
-            {dateRange?.from && dateRange?.to ? (
-              <span>
-                {format(dateRange.from, "MMM dd")} -{" "}
-                {format(dateRange.to, "MMM dd, yyyy")}
-              </span>
-            ) : (
-              <span>Pick date range</span>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={dateRange?.from}
-            selected={dateRange}
-            onSelect={setDateRange}
-            numberOfMonths={2}
-          />
-        </PopoverContent>
-      </Popover>
-      {/* Quick Presets */}
-      <div className="flex gap-1 sm:gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setQuickDateRange(7)}
-          className="text-xs px-2"
-        >
-          7D
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setQuickDateRange(30)}
-          className="text-xs px-2"
-        >
-          30D
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setMonthRange(0)}
-          className="text-xs px-2"
-        >
-          This Month
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setMonthRange(1)}
-          className="text-xs px-2"
-        >
-          Last Month
-        </Button>
-      </div>
-      {/* Branch Selector */}
-      <div className="min-w-[160px]">
-        <Select value={selectedBranch} onValueChange={setSelectedBranch}>
-          <SelectTrigger className="h-10">
-            <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
-            <SelectValue placeholder="Select Branch" />
-          </SelectTrigger>
-          <SelectContent>
-            {canViewAllBranches && (
-              <SelectItem value="all">All Branches</SelectItem>
-            )}
-            {branches.map((branch) => (
-              <SelectItem key={branch.id} value={branch.id}>
-                {branch.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      {/* Apply & Reset Buttons */}
-      <div className="flex gap-2 ml-auto">
-        <Button
-          variant="default"
-          onClick={onApply}
-          disabled={loading}
-          className="px-4"
-        >
-          <RefreshCw
-            className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
-          />
-          Apply
-        </Button>
-        <Button
-          variant="outline"
-          onClick={onReset}
-          disabled={loading}
-          className="px-4"
-        >
-          <X className="h-4 w-4 mr-2" />
-          Reset
-        </Button>
-      </div>
-    </div>
+    <Card className="shadow-md">
+      <CardContent className="p-6">
+        <div className="space-y-4">
+          {/* Header */}
+          <div className="flex items-center gap-2 pb-2 border-b">
+            <Filter className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-lg">Report Filters</h3>
+          </div>
+
+          {/* Main Filter Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Date Range Section */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <CalendarIcon className="h-4 w-4" />
+                Date Range
+              </label>
+
+              {/* Date Range Picker Button */}
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal h-11"
+                    aria-label="Select date range"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {dateRange?.from && dateRange?.to ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">
+                          {format(dateRange.from, "MMM dd, yyyy")}
+                        </span>
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">
+                          {format(dateRange.to, "MMM dd, yyyy")}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        Select date range
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              {/* Quick Presets */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange(7)}
+                  className="text-sm h-9"
+                >
+                  Last 7 Days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setQuickDateRange(30)}
+                  className="text-sm h-9"
+                >
+                  Last 30 Days
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMonthRange(0)}
+                  className="text-sm h-9"
+                >
+                  This Month
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMonthRange(1)}
+                  className="text-sm h-9"
+                >
+                  Last Month
+                </Button>
+              </div>
+            </div>
+
+            {/* Branch Selector Section */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Branch
+              </label>
+              <Select value={selectedBranch} onValueChange={setSelectedBranch}>
+                <SelectTrigger className="h-11 w-full">
+                  <SelectValue placeholder="Select Branch" />
+                </SelectTrigger>
+                <SelectContent>
+                  {canViewAllBranches && (
+                    <SelectItem value="all">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-primary" />
+                        <span className="font-medium">All Branches</span>
+                      </div>
+                    </SelectItem>
+                  )}
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        {branch.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Action Buttons Section */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-muted-foreground">
+                Actions
+              </label>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant="default"
+                  onClick={onApply}
+                  disabled={loading}
+                  className="h-11 w-full"
+                >
+                  <RefreshCw
+                    className={cn("h-4 w-4 mr-2", loading && "animate-spin")}
+                  />
+                  {loading ? "Loading..." : "Apply Filters"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={onReset}
+                  disabled={loading}
+                  className="h-11 w-full"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Reset to Defaults
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

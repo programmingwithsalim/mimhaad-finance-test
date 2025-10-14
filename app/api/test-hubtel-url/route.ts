@@ -42,7 +42,7 @@ export async function GET() {
       url: url.toString().replace(/clientsecret=([^&]+)/, "clientsecret=***"),
     });
   } catch (error) {
-    console.error("❌ Test error:", error);
+    console.error("Test error:", error);
     return NextResponse.json(
       { success: false, error: "Test failed" },
       { status: 500 }

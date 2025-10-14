@@ -13,7 +13,7 @@ export async function GET() {
     const branchFilter = user.role === "admin" ? null : user.branchId;
 
     console.log(
-      `🔍 Fetching agency banking statistics for user: ${user.role}, branch: ${branchFilter}`
+      `Fetching agency banking statistics for user: ${user.role}, branch: ${branchFilter}`
     );
 
     // Get today's statistics (last 24 hours)
@@ -146,7 +146,7 @@ export async function GET() {
       lowFloatAlerts = Number(floatStats[0]?.low_balance_count || 0);
     }
 
-    console.log(`📊 Agency Banking Debug Info:`);
+    console.log(`Agency Banking Debug Info:`);
     console.log(`   Total transactions: ${totalCount[0]?.total || 0}`);
     console.log(
       `   Completed transactions: ${completedCount[0]?.completed || 0}`

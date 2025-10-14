@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const results = [];
 
     for (const branch of branches) {
-      console.log(`\n📋 Processing branch: ${branch.name} (${branch.id})`);
+      console.log(`\nProcessing branch: ${branch.name} (${branch.id})`);
 
       // Check if cash in till account exists for this branch
       const existingAccount = await sql`
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
       if (existingAccount.length > 0) {
         const account = existingAccount[0];
-        console.log(`✅ Cash in till account exists:`);
+        console.log(`Cash in till account exists:`);
         console.log(`   - ID: ${account.id}`);
         console.log(`   - Current Balance: ${account.current_balance}`);
         console.log(`   - Min Threshold: ${account.min_threshold}`);
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
           account: account,
         });
       } else {
-        console.log(`❌ No cash in till account found. Creating one...`);
+        console.log(`No cash in till account found. Creating one...`);
 
         // Create cash in till account
         const newAccount = await sql`
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           RETURNING id, current_balance, min_threshold, max_threshold
         `;
 
-        console.log(`✅ Created cash in till account:`);
+        console.log(`Created cash in till account:`);
         console.log(`   - ID: ${newAccount[0].id}`);
         console.log(`   - Current Balance: ${newAccount[0].current_balance}`);
         console.log(`   - Min Threshold: ${newAccount[0].min_threshold}`);
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       totalBranches: branches.length,
     });
   } catch (error) {
-    console.error("❌ Error initializing cash in till accounts:", error);
+    console.error("Error initializing cash in till accounts:", error);
     return NextResponse.json(
       {
         success: false,

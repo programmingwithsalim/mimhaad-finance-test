@@ -121,8 +121,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (isDev) console.log("Middleware processing:", pathname);
-
   // Handle API routes
   if (pathname.startsWith("/api/")) {
     // Add CORS headers
@@ -190,7 +188,6 @@ export async function middleware(request: NextRequest) {
         }
       }
 
-      console.log("Authenticated API request");
       return response;
     } catch (error) {
       console.error("Session check error in middleware:", error);
@@ -204,31 +201,18 @@ export async function middleware(request: NextRequest) {
   // Handle page routes
   try {
     const session = await getDatabaseSession(request);
-    console.log("Session check result:", !!session);
-
-    // Debug: Check what cookies are present
-    const sessionCookie = request.cookies.get("session_token");
-    console.log("Session cookie present:", !!sessionCookie);
-    if (sessionCookie) {
-      console.log("Session token length:", sessionCookie.value.length);
-    }
 
     // If accessing public routes, allow access
     if (publicRoutes.includes(pathname)) {
       // If user is authenticated and trying to access login page, redirect to dashboard
       if (session && pathname === "/") {
-        console.log(
-          "Authenticated user accessing login, redirecting to dashboard"
-        );
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
-      console.log("Public route access allowed");
       return NextResponse.next();
     }
 
     // For protected routes, if no session, redirect to login
     if (!session || !session.user) {
-      console.log("No session for protected route, redirecting to login");
       return NextResponse.redirect(new URL("/", request.url));
     }
 
@@ -242,7 +226,6 @@ export async function middleware(request: NextRequest) {
         if (pathname.startsWith(route)) {
           // Check role restriction
           if (!restriction.roles.includes(userRole)) {
-            console.log(`Access denied: ${userRole} cannot access ${pathname}`);
             return NextResponse.redirect(new URL("/unauthorized", request.url));
           }
 
@@ -252,9 +235,6 @@ export async function middleware(request: NextRequest) {
               (permission) => hasPermission(userRole, permission)
             );
             if (!hasRequiredPermission) {
-              console.log(
-                `Permission denied: ${userRole} lacks required permissions for ${pathname}`
-              );
               return NextResponse.redirect(
                 new URL("/unauthorized", request.url)
               );
@@ -265,7 +245,6 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    console.log("Authenticated access to protected route");
     return NextResponse.next();
   } catch (error) {
     console.error("Middleware error:", error);

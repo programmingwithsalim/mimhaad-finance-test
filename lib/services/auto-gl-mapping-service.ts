@@ -74,7 +74,7 @@ export class AutoGLMappingService {
     floatAccountId?: string
   ): Promise<void> {
     console.log(
-      `🔄 [AUTO-MAPPING] Ensuring reversal mappings for ${sourceModule}/${baseTransactionType} in branch ${branchId}${
+      `[AUTO-MAPPING] Ensuring reversal mappings for ${sourceModule}/${baseTransactionType} in branch ${branchId}${
         floatAccountId ? ` for float account ${floatAccountId}` : ""
       }`
     );
@@ -98,7 +98,7 @@ export class AutoGLMappingService {
             floatAccountId
           );
           console.log(
-            `✅ [AUTO-MAPPING] Created reversal mapping: ${reversalType} -> ${mappingType}`
+            `[AUTO-MAPPING] Created reversal mapping: ${reversalType} -> ${mappingType}`
           );
         } catch (error) {
           console.warn(

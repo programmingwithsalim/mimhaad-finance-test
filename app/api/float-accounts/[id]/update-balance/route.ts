@@ -221,14 +221,9 @@ export async function POST(
         account.branch_id,
         `BAL-ADJ-${Date.now()}`
       );
-      console.log(
-        "✅ [BALANCE-UPDATE] GL entries created for balance adjustment"
-      );
+      console.log("[BALANCE-UPDATE] GL entries created for balance adjustment");
     } catch (glError) {
-      console.error(
-        "❌ [BALANCE-UPDATE] Failed to create GL entries:",
-        glError
-      );
+      console.error("[BALANCE-UPDATE] Failed to create GL entries:", glError);
       // Don't fail the operation for GL entry issues
     }
 

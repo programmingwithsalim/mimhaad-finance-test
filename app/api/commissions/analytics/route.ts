@@ -6,7 +6,7 @@ const sql = neon(process.env.DATABASE_URL!);
 
 export async function GET(request: NextRequest) {
   try {
-    console.log("📊 [COMMISSION ANALYTICS] Fetching commission analytics data");
+    console.log("[COMMISSION ANALYTICS] Fetching commission analytics data");
 
     const user = await getCurrentUser();
     if (!user) {
@@ -19,14 +19,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const months = parseInt(searchParams.get("months") || "6");
 
-    console.log("📊 [COMMISSION ANALYTICS] Requested months:", months);
+    console.log("[COMMISSION ANALYTICS] Requested months:", months);
 
     // Calculate date range
     const endDate = new Date();
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - months);
 
-    console.log("📊 [COMMISSION ANALYTICS] Date range:", {
+    console.log("[COMMISSION ANALYTICS] Date range:", {
       startDate: startDate.toISOString(),
       endDate: endDate.toISOString(),
     });
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch monthly commission data by provider
     console.log(
-      "📊 [COMMISSION ANALYTICS] Building query for branch access:",
+      "[COMMISSION ANALYTICS] Building query for branch access:",
       canViewAllBranches
     );
 
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(
-      "📊 [COMMISSION ANALYTICS] Raw monthly results:",
+      "[COMMISSION ANALYTICS] Raw monthly results:",
       monthlyResults.length
     );
 
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       })
       .sort((a, b) => b.total - a.total);
 
-    console.log("📊 [COMMISSION ANALYTICS] Final data:", {
+    console.log("[COMMISSION ANALYTICS] Final data:", {
       chartDataLength: chartData.length,
       providerTotalsLength: providerTotals.length,
       providers: Array.from(providers),
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ [COMMISSION ANALYTICS] Error:", error);
+    console.error("[COMMISSION ANALYTICS] Error:", error);
     return NextResponse.json(
       {
         success: false,

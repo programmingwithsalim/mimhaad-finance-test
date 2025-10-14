@@ -37,11 +37,10 @@ export async function POST(request: NextRequest) {
       expiresAt: result.expiresAt,
     });
   } catch (error) {
-    console.error("❌ [2FA] Error sending OTP:", error);
+    console.error("[2FA] Error sending OTP:", error);
     return NextResponse.json(
       { success: false, error: "Failed to send OTP" },
       { status: 500 }
     );
   }
 }
-

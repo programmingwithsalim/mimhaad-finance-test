@@ -1,90 +1,116 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { Commission } from "@/lib/commission-types"
-import { formatCurrency } from "@/lib/utils" // Updated import
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import { useCommissions } from "@/hooks/use-commissions"
-import { useToast } from "@/components/ui/use-toast"
-import { DollarSign, MessageSquare, Paperclip, Upload } from "lucide-react"
+import { useState } from "react";
+import type { Commission } from "@/lib/commission-types";
+import { formatCurrency } from "@/lib/utils"; // Updated import
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { useCommissions } from "@/hooks/use-commissions";
+import { useToast } from "@/components/ui/use-toast";
+import { DollarSign, MessageSquare, Paperclip, Upload } from "lucide-react";
 
 interface CommissionDetailsProps {
-  commission: Commission
+  commission: Commission;
 }
 
 export function CommissionDetails({ commission }: CommissionDetailsProps) {
-  const { addComment, markCommissionPaid } = useCommissions()
-  const [comment, setComment] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
+  const { addComment, markCommissionPaid } = useCommissions();
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const handleAddComment = async () => {
-    if (!comment.trim()) return
+    if (!comment.trim()) return;
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
-      await addComment(commission.id, comment)
-      setComment("")
+      await addComment(commission.id, comment);
+      setComment("");
       toast({
         title: "Comment added",
         description: "Your comment has been added successfully.",
-      })
+      });
     } catch (error) {
-      console.error("Error adding comment:", error)
+      console.error("Error adding comment:", error);
       toast({
         title: "Error",
-        description: "There was an error adding your comment. Please try again.",
+        description:
+          "There was an error adding your comment. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleMarkPaid = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       await markCommissionPaid(commission.id, {
         method: "bank_transfer",
         receivedAt: new Date().toISOString(),
-      })
+      });
       toast({
         title: "Commission marked as paid",
         description: "The commission has been marked as paid successfully.",
-      })
+      });
     } catch (error) {
-      console.error("Error marking commission as paid:", error)
+      console.error("Error marking commission as paid:", error);
       toast({
         title: "Error",
-        description: "There was an error marking the commission as paid. Please try again.",
+        description:
+          "There was an error marking the commission as paid. Please try again.",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const getStatusBadge = () => {
     switch (commission.status) {
       case "pending":
         return (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-            Pending
+          <Badge
+            variant="outline"
+            className="bg-yellow-50 text-yellow-700 border-yellow-200"
+          >
+            Pending Approval
           </Badge>
-        )
+        );
+      case "approved":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-green-50 text-green-700 border-green-200"
+          >
+            Approved
+          </Badge>
+        );
       case "paid":
         return (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          <Badge
+            variant="outline"
+            className="bg-blue-50 text-blue-700 border-blue-200"
+          >
             Paid
           </Badge>
-        )
+        );
+      case "rejected":
+        return (
+          <Badge
+            variant="outline"
+            className="bg-red-50 text-red-700 border-red-200"
+          >
+            Rejected
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">{commission.status}</Badge>
+        return <Badge variant="outline">{commission.status}</Badge>;
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -102,7 +128,9 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Amount:</span>
-              <span className="font-medium">{formatCurrency(commission.amount)}</span>
+              <span className="font-medium">
+                {formatCurrency(commission.amount)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Reference:</span>
@@ -114,7 +142,9 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Created:</span>
-              <span className="font-medium">{new Date(commission.createdAt).toLocaleDateString()}</span>
+              <span className="font-medium">
+                {new Date(commission.createdAt).toLocaleDateString()}
+              </span>
             </div>
             {commission.description && (
               <div className="pt-2">
@@ -126,37 +156,93 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
         </div>
 
         <div>
-          {commission.status === "paid" && (
+          {/* Show approval info for approved/paid commissions */}
+          {(commission.status === "approved" ||
+            commission.status === "paid") && (
             <>
-              <h3 className="text-lg font-medium">Payment Information</h3>
+              <h3 className="text-lg font-medium">
+                {commission.status === "approved"
+                  ? "Approval Information"
+                  : "Payment Information"}
+              </h3>
               <div className="mt-3 space-y-2">
-                {commission.payment ? (
+                {commission.status === "approved" && (
+                  <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-md space-y-2">
+                    <p className="text-green-700 dark:text-green-300 font-medium">
+                      Commission Approved - Ready for Payment
+                    </p>
+                    {commission.approved_by_name && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Approved By:
+                        </span>
+                        <span className="font-medium">
+                          {commission.approved_by_name}
+                        </span>
+                      </div>
+                    )}
+                    {commission.approved_at && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Approved At:
+                        </span>
+                        <span className="font-medium">
+                          {new Date(commission.approved_at).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {commission.approval_comments && (
+                      <div className="pt-2 border-t">
+                        <span className="text-sm text-muted-foreground">
+                          Comments:
+                        </span>
+                        <p className="text-sm mt-1">
+                          {commission.approval_comments}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {commission.status === "paid" && commission.payment ? (
                   <>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Payment Method:</span>
+                      <span className="text-muted-foreground">
+                        Payment Method:
+                      </span>
                       <span className="font-medium">
-                        {commission.payment.method === "auto_approved" ? "Auto Approved" : commission.payment.method}
+                        {commission.payment.method === "auto_approved"
+                          ? "Auto Approved"
+                          : commission.payment.method}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Payment Date:</span>
+                      <span className="text-muted-foreground">
+                        Payment Date:
+                      </span>
                       <span className="font-medium">
                         {commission.payment.receivedAt
-                          ? new Date(commission.payment.receivedAt).toLocaleDateString()
+                          ? new Date(
+                              commission.payment.receivedAt
+                            ).toLocaleDateString()
                           : "N/A"}
                       </span>
                     </div>
                     {commission.payment.method === "auto_approved" && (
                       <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
                         <p className="text-blue-700 dark:text-blue-300 text-sm">
-                          This commission was automatically approved when created by a manager.
+                          This commission was automatically approved when
+                          created by a manager.
                         </p>
                       </div>
                     )}
                     {commission.payment.referenceNumber && (
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Reference:</span>
-                        <span className="font-medium">{commission.payment.referenceNumber}</span>
+                        <span className="text-muted-foreground">
+                          Reference:
+                        </span>
+                        <span className="font-medium">
+                          {commission.payment.referenceNumber}
+                        </span>
                       </div>
                     )}
                     {commission.payment.notes && (
@@ -168,7 +254,9 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
                   </>
                 ) : (
                   <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md">
-                    <p className="text-blue-700 dark:text-blue-300">No payment details available.</p>
+                    <p className="text-blue-700 dark:text-blue-300">
+                      No payment details available.
+                    </p>
                   </div>
                 )}
               </div>
@@ -183,8 +271,13 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
       <div>
         <h3 className="text-lg font-medium">Actions</h3>
         <div className="mt-3 flex flex-wrap gap-2">
-          {commission.status === "pending" && (
-            <Button onClick={handleMarkPaid} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700">
+          {(commission.status === "pending" ||
+            commission.status === "approved") && (
+            <Button
+              onClick={handleMarkPaid}
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               <DollarSign className="mr-2 h-4 w-4" />
               Mark as Paid
             </Button>
@@ -207,7 +300,9 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
               {commission.comments.map((comment, index) => (
                 <div key={index} className="bg-muted/40 p-3 rounded-md">
                   <div className="flex justify-between items-start">
-                    <span className="font-medium">{comment.createdBy?.name || "Unknown User"}</span>
+                    <span className="font-medium">
+                      {comment.createdBy?.name || "Unknown User"}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {new Date(comment.createdAt).toLocaleString()}
                     </span>
@@ -232,7 +327,11 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
                 <Upload className="mr-2 h-4 w-4" />
                 Attach
               </Button>
-              <Button size="sm" onClick={handleAddComment} disabled={!comment.trim() || isSubmitting}>
+              <Button
+                size="sm"
+                onClick={handleAddComment}
+                disabled={!comment.trim() || isSubmitting}
+              >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Add Comment
               </Button>
@@ -241,5 +340,5 @@ export function CommissionDetails({ commission }: CommissionDetailsProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

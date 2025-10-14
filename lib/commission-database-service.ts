@@ -421,8 +421,8 @@ export async function createCommission(
         : Number.parseFloat(input.amount?.toString() || "0");
     const amountString = amountValue.toFixed(2);
 
-    // Always mark as paid by default
-    const status = "paid";
+    // Default to pending - requires approval before payment
+    const status = "pending";
 
     // Use explicit type casting in the SQL query
     const result = await sql`
@@ -449,16 +449,13 @@ export async function createCommission(
 
     const commission = result[0];
 
-    // MANDATORY float account crediting - if this fails, commission creation fails
-    console.log(
-      `🏦 COMMISSION CREATION: Starting REQUIRED float account crediting...`
-    );
-    console.log(
-      `💰 Amount: GHS ${amountValue}, Float Account: ${input.source}`
-    );
+    // Note: Float account will be credited when commission is APPROVED, not at creation
+    console.log(`COMMISSION CREATED: Status = pending (awaiting approval)`);
+    console.log(`Amount: GHS ${amountValue}, Float Account: ${input.source}`);
 
+    // Basic validation
     if (amountValue <= 0) {
-      console.error(`❌ Invalid commission amount: ${amountValue}`);
+      console.error(`Invalid commission amount: ${amountValue}`);
       await sql`DELETE FROM commissions WHERE id = ${commission.id}::UUID`;
       throw new Error(
         `Invalid commission amount: ${amountValue}. Commission creation cancelled.`
@@ -466,14 +463,14 @@ export async function createCommission(
     }
 
     if (!input.source) {
-      console.error(`❌ No float account specified`);
+      console.error(`No float account specified`);
       await sql`DELETE FROM commissions WHERE id = ${commission.id}::UUID`;
       throw new Error(
         `No float account specified. Commission creation cancelled.`
       );
     }
 
-    // Check if the float account exists
+    // Verify float account exists (but don't credit yet)
     const floatAccountCheck = await sql`
       SELECT id, current_balance, account_name 
       FROM float_accounts 
@@ -481,7 +478,7 @@ export async function createCommission(
     `;
 
     if (floatAccountCheck.length === 0) {
-      console.error(`❌ Float account not found: ${input.source}`);
+      console.error(`Float account not found: ${input.source}`);
       await sql`DELETE FROM commissions WHERE id = ${commission.id}::UUID`;
       throw new Error(
         `Float account not found: ${input.source}. Commission creation cancelled.`
@@ -489,59 +486,9 @@ export async function createCommission(
     }
 
     const floatAccount = floatAccountCheck[0];
-    const oldBalance = Number(floatAccount.current_balance) || 0;
+    console.log(`Float account verified: ${floatAccount.account_name}`);
     console.log(
-      `✅ Found float account: ${floatAccount.account_name} (Balance: GHS ${oldBalance})`
-    );
-
-    // Update the float account balance
-    const updateResult = await sql`
-      UPDATE float_accounts 
-      SET current_balance = current_balance + ${amountValue}::DECIMAL(15,2),
-          updated_at = NOW()
-      WHERE id = ${input.source}::UUID
-      RETURNING current_balance
-    `;
-
-    if (updateResult.length === 0) {
-      console.error(
-        `❌ Failed to update float account balance - no rows affected`
-      );
-      await sql`DELETE FROM commissions WHERE id = ${commission.id}::UUID`;
-      throw new Error(
-        `Failed to credit float account ${input.source}. Commission creation cancelled.`
-      );
-    }
-
-    const newBalance = Number(updateResult[0].current_balance);
-    const actualChange = newBalance - oldBalance;
-    console.log(
-      `💳 Float account credited: ${oldBalance} + ${amountValue} = ${newBalance}`
-    );
-    console.log(`📊 Actual change: GHS ${actualChange}`);
-
-    // Verify the change is correct (allow small decimal differences)
-    if (Math.abs(actualChange - amountValue) > 0.01) {
-      console.error(
-        `❌ Balance change mismatch! Expected ${amountValue}, got ${actualChange}`
-      );
-
-      // Reverse the float account change
-      await sql`
-        UPDATE float_accounts 
-        SET current_balance = current_balance - ${amountValue}::DECIMAL(15,2),
-            updated_at = NOW()
-        WHERE id = ${input.source}::UUID
-      `;
-
-      await sql`DELETE FROM commissions WHERE id = ${commission.id}::UUID`;
-      throw new Error(
-        `Float account balance change mismatch. Expected ${amountValue}, got ${actualChange}. Commission creation cancelled.`
-      );
-    }
-
-    console.log(
-      `✅ Float account successfully credited with GHS ${amountValue}`
+      `💡 Commission created as PENDING - will credit float account upon approval`
     );
 
     const createdCommission = await getCommissionById(commission.id);
@@ -958,28 +905,39 @@ export async function markCommissionPaid(
     await sql`
       UPDATE commissions 
       SET status = 'paid'::VARCHAR, 
-          updated_by_id = ${userId}::VARCHAR, 
-          updated_by_name = ${userName}::VARCHAR
-      WHERE id = ${id}::UUID AND status = 'pending'
+          updated_by = ${userId}::UUID, 
+          updated_by_name = ${userName}::VARCHAR,
+          updated_at = NOW()
+      WHERE id = ${id}::UUID AND status IN ('pending', 'approved')
     `;
 
-    await sql`
-      INSERT INTO commission_payments (
-        commission_id, method, received_at, bank_account, reference_number, 
-        notes, processed_by_id, processed_by_name
-      ) VALUES (
-        ${id}::UUID, 
-        ${paymentInfo.method || "bank_transfer"}::VARCHAR, 
-        ${
-          paymentInfo.receivedAt || new Date().toISOString()
-        }::TIMESTAMP WITH TIME ZONE, 
-        ${paymentInfo.bankAccount || null}::VARCHAR, 
-        ${paymentInfo.referenceNumber || null}::VARCHAR, 
-        ${paymentInfo.notes || null}::TEXT, 
-        ${userId}::VARCHAR, 
-        ${userName}::VARCHAR
-      )
-    `;
+    // // Try to insert payment record (optional - don't fail if table doesn't exist)
+    // try {
+    //   await sql`
+    //     INSERT INTO commission_payments (
+    //       commission_id, method, received_at, bank_account, reference_number,
+    //       notes, processed_by_id, processed_by_name
+    //     ) VALUES (
+    //       ${id}::UUID,
+    //       ${paymentInfo.method || "bank_transfer"}::VARCHAR,
+    //       ${
+    //         paymentInfo.receivedAt || new Date().toISOString()
+    //       }::TIMESTAMP WITH TIME ZONE,
+    //       ${paymentInfo.bankAccount || null}::VARCHAR,
+    //       ${paymentInfo.referenceNumber || null}::VARCHAR,
+    //       ${paymentInfo.notes || null}::TEXT,
+    //       ${userId}::UUID,
+    //       ${userName}::VARCHAR
+    //     )
+    //   `;
+    //   console.log("Payment record created successfully");
+    // } catch (paymentError) {
+    //   console.warn(
+    //     "Failed to create payment record (table may not exist):",
+    //     paymentError
+    //   );
+    //   // Continue - payment marking succeeded even if payment record failed
+    // }
 
     return await getCommissionById(id);
   } catch (error) {
@@ -1159,16 +1117,9 @@ export async function approveCommission(
           approved_by_name = ${userName}::VARCHAR,
           approved_at = CURRENT_TIMESTAMP,
           approval_comments = ${notes || "Commission approved"}::TEXT,
-          updated_by = ${userId}::UUID
+          updated_at = NOW()
       WHERE id = ${id}::UUID AND status = 'pending'
     `;
-
-    // Add approval comment
-    if (notes) {
-      await addComment(id, userId, userName, `Approved: ${notes}`);
-    } else {
-      await addComment(id, userId, userName, "Commission approved");
-    }
 
     return await getCommissionById(id);
   } catch (error) {
@@ -1192,12 +1143,11 @@ export async function rejectCommission(
           approved_by_name = ${userName}::VARCHAR,
           approved_at = CURRENT_TIMESTAMP,
           approval_comments = ${reason || "Commission rejected"}::TEXT,
-          updated_by = ${userId}::UUID
+          updated_at = NOW()
       WHERE id = ${id}::UUID AND status = 'pending'
     `;
 
     // Add rejection comment
-    await addComment(id, userId, userName, `Rejected: ${reason}`);
 
     return await getCommissionById(id);
   } catch (error) {

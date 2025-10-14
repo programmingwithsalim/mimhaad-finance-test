@@ -46,7 +46,7 @@ const commissionSchema = z.object({
   commissionRate: z.number().min(0.01, "Commission rate is required"),
   description: z.string().optional(),
   notes: z.string().optional(),
-  status: z.string().default("paid"),
+  status: z.string().default("pending"), // Changed to pending - requires approval workflow
 });
 
 type CommissionFormData = z.infer<typeof commissionSchema>;
@@ -151,7 +151,7 @@ export default function CommissionForm({ onSuccess }: CommissionFormProps) {
           );
 
           console.log(
-            "📊 [COMMISSION] Loaded float accounts:",
+            "[COMMISSION] Loaded float accounts:",
             activeAccounts.length,
             "for branch:",
             user?.branchId || "all branches (admin)"
@@ -192,7 +192,7 @@ export default function CommissionForm({ onSuccess }: CommissionFormProps) {
         ];
 
         console.log(
-          "📊 [COMMISSION] Using fallback accounts:",
+          "[COMMISSION] Using fallback accounts:",
           fallbackAccounts.length
         );
         setFloatAccounts(fallbackAccounts);
@@ -323,7 +323,7 @@ export default function CommissionForm({ onSuccess }: CommissionFormProps) {
         userData.branchName = "Main Branch";
       }
 
-      console.log("📝 [COMMISSION] Submitting with user data:", userData);
+      console.log("[COMMISSION] Submitting with user data:", userData);
 
       // Create FormData to handle file upload
       const formData = new FormData();
@@ -376,7 +376,7 @@ export default function CommissionForm({ onSuccess }: CommissionFormProps) {
         onSuccess();
       }
     } catch (error) {
-      console.error("❌ [COMMISSION] Error:", error);
+      console.error("[COMMISSION] Error:", error);
       setFormError(
         error instanceof Error ? error.message : "An unexpected error occurred"
       );
@@ -423,12 +423,22 @@ export default function CommissionForm({ onSuccess }: CommissionFormProps) {
             <SelectContent>
               {floatAccounts.map((account) => (
                 <SelectItem key={account.id} value={account.id}>
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    <span>{account.provider}</span>
-                    <span className="text-muted-foreground">
-                      ({account.account_type})
-                    </span>
+                  <div className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="h-4 w-4" />
+                      <span className="font-medium">{account.provider}</span>
+                      <span className="text-xs text-muted-foreground px-1.5 py-0.5 bg-muted rounded">
+                        {account.account_type}
+                      </span>
+                    </div>
+                    {account.account_number && (
+                      <div className="flex items-center gap-1.5 ml-6 text-xs text-muted-foreground">
+                        <span>Account:</span>
+                        <span className="font-mono font-medium">
+                          {account.account_number}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </SelectItem>
               ))}

@@ -69,7 +69,7 @@ export class EnhancedFloatStatementService {
   }> {
     try {
       console.log(
-        "🔷 [FLOAT STATEMENT] Generating statement for account:",
+        "[FLOAT STATEMENT] Generating statement for account:",
         floatAccountId
       );
 
@@ -107,7 +107,7 @@ export class EnhancedFloatStatementService {
       );
 
       console.log(
-        `🔍 [FLOAT STATEMENT] Found ${floatTransactions.length} float transactions`
+        `[FLOAT STATEMENT] Found ${floatTransactions.length} float transactions`
       );
 
       // Get GL journal entries only if includeGL is true or not specified
@@ -117,12 +117,10 @@ export class EnhancedFloatStatementService {
           floatAccountId,
           filters
         );
-        console.log(
-          `🔍 [FLOAT STATEMENT] Found ${glEntries.length} GL entries`
-        );
+        console.log(`[FLOAT STATEMENT] Found ${glEntries.length} GL entries`);
       } else {
         console.log(
-          `🔍 [FLOAT STATEMENT] Skipping GL entries (includeGL = false)`
+          `[FLOAT STATEMENT] Skipping GL entries (includeGL = false)`
         );
       }
 
@@ -181,14 +179,14 @@ export class EnhancedFloatStatementService {
     `;
 
     console.log(
-      `🔍 [FLOAT TRANSACTIONS] Total transactions for account: ${
+      `[FLOAT TRANSACTIONS] Total transactions for account: ${
         basicCheck[0]?.total_count || 0
       }`
     );
 
     if (basicCheck[0]?.total_count === 0) {
       console.log(
-        `🔍 [FLOAT TRANSACTIONS] No transactions found for account ${floatAccountId}`
+        `[FLOAT TRANSACTIONS] No transactions found for account ${floatAccountId}`
       );
       return [];
     }
@@ -204,7 +202,7 @@ export class EnhancedFloatStatementService {
       `;
 
       console.log(
-        `🔍 [FLOAT TRANSACTIONS] Transactions in date range: ${
+        `[FLOAT TRANSACTIONS] Transactions in date range: ${
           dateRangeCheck[0]?.count_in_range || 0
         }`
       );
@@ -268,11 +266,11 @@ export class EnhancedFloatStatementService {
 
     queryString += ` ORDER BY ft.created_at DESC`;
 
-    console.log(`🔍 [FLOAT TRANSACTIONS] Query: ${queryString}`);
-    console.log(`🔍 [FLOAT TRANSACTIONS] Params:`, params);
+    console.log(`[FLOAT TRANSACTIONS] Query: ${queryString}`);
+    console.log(`[FLOAT TRANSACTIONS] Params:`, params);
 
     const result = await sql.query(queryString, params);
-    console.log(`🔍 [FLOAT TRANSACTIONS] Result count: ${result.length}`);
+    console.log(`[FLOAT TRANSACTIONS] Result count: ${result.length}`);
 
     return result;
   }
@@ -299,7 +297,7 @@ export class EnhancedFloatStatementService {
 
     if (mappingsResult.length === 0) {
       console.log(
-        `🔍 [GL ENTRIES] No float-specific GL mappings found for float account ${floatAccountId} - trying transaction-type based mappings`
+        `[GL ENTRIES] No float-specific GL mappings found for float account ${floatAccountId} - trying transaction-type based mappings`
       );
 
       // Try to get transaction-type based mappings instead
@@ -330,18 +328,18 @@ export class EnhancedFloatStatementService {
 
         if (transactionTypeMappings.length > 0) {
           console.log(
-            `🔍 [GL ENTRIES] Found ${transactionTypeMappings.length} transaction-type based mappings for ${transactionType}`
+            `[GL ENTRIES] Found ${transactionTypeMappings.length} transaction-type based mappings for ${transactionType}`
           );
           mappingsResult.push(...transactionTypeMappings);
         } else {
           console.log(
-            `🔍 [GL ENTRIES] No transaction-type mappings found for ${transactionType} - continuing with float transactions only`
+            `[GL ENTRIES] No transaction-type mappings found for ${transactionType} - continuing with float transactions only`
           );
           return [];
         }
       } else {
         console.log(
-          `🔍 [GL ENTRIES] Float account not found - continuing with float transactions only`
+          `[GL ENTRIES] Float account not found - continuing with float transactions only`
         );
         return [];
       }
@@ -349,7 +347,7 @@ export class EnhancedFloatStatementService {
 
     const glAccountIds = mappingsResult.map((m: any) => m.gl_account_id);
     console.log(
-      `🔍 [GL ENTRIES] Found ${glAccountIds.length} GL account mappings for float account ${floatAccountId}`
+      `[GL ENTRIES] Found ${glAccountIds.length} GL account mappings for float account ${floatAccountId}`
     );
 
     // Build query to get GL entries for all modules that affect this float account
@@ -405,12 +403,12 @@ export class EnhancedFloatStatementService {
 
     queryString += ` ORDER BY glt.date DESC, glt.created_at DESC`;
 
-    console.log(`🔍 [GL ENTRIES] Query: ${queryString}`);
-    console.log(`🔍 [GL ENTRIES] Params:`, params);
+    console.log(`[GL ENTRIES] Query: ${queryString}`);
+    console.log(`[GL ENTRIES] Params:`, params);
 
     const result = await sql.query(queryString, params);
     console.log(
-      `🔍 [GL ENTRIES] Found ${result.length} GL entries for float account ${floatAccountId}`
+      `[GL ENTRIES] Found ${result.length} GL entries for float account ${floatAccountId}`
     );
 
     return result;
@@ -430,7 +428,7 @@ export class EnhancedFloatStatementService {
     const processedGLTransactions = new Set<string>();
 
     console.log(
-      `🔍 [MERGE] Processing ${floatTransactions.length} float transactions and ${glEntries.length} GL entries`
+      `[MERGE] Processing ${floatTransactions.length} float transactions and ${glEntries.length} GL entries`
     );
 
     // Add float transactions first
@@ -468,7 +466,7 @@ export class EnhancedFloatStatementService {
     }
 
     console.log(
-      `🔍 [MERGE] Found ${glTransactionsMap.size} unique GL transactions`
+      `[MERGE] Found ${glTransactionsMap.size} unique GL transactions`
     );
 
     // Process GL transactions and convert them to float transaction format
@@ -608,7 +606,7 @@ export class EnhancedFloatStatementService {
     }
 
     console.log(
-      `🔍 [MERGE] Final merged entries: ${merged.length}, Opening balance: ${openingBalance}, Closing balance: ${runningBalance}`
+      `[MERGE] Final merged entries: ${merged.length}, Opening balance: ${openingBalance}, Closing balance: ${runningBalance}`
     );
 
     return merged;
@@ -671,7 +669,7 @@ export class EnhancedFloatStatementService {
         ? sortedEntries[sortedEntries.length - 1].balanceAfter
         : 0;
 
-    console.log(`🔍 [SUMMARY] Calculated summary:`, {
+    console.log(`[SUMMARY] Calculated summary:`, {
       totalEntries: entries.length,
       floatTransactions: floatTransactions.length,
       glTransactions: glTransactions.length,

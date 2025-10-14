@@ -205,7 +205,7 @@ export async function GET(request: NextRequest) {
         }
       }
     } catch (dbError) {
-      if (isDev) console.error("💰 [FLOAT] Database error:", dbError);
+      if (isDev) console.error("[FLOAT] Database error:", dbError);
       throw dbError;
     }
 
@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     console.log(
-      "💰 [FLOAT] Creating float account with data:",
+      "[FLOAT] Creating float account with data:",
       JSON.stringify(body, null, 2)
     );
 
@@ -284,7 +284,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("💰 [FLOAT] Using user ID:", user.id);
+    console.log("[FLOAT] Using user ID:", user.id);
 
     // Use FloatAccountService for creation (auto GL)
     const floatAccount = await FloatAccountService.createFloatAccount({
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
       message: "Float account created successfully (with GL)",
     });
   } catch (error) {
-    console.error("❌ [FLOAT] Error creating float account:", error);
+    console.error("[FLOAT] Error creating float account:", error);
 
     // Handle unique constraint violations for float account types per branch
     const uniqueConstraintMessage =

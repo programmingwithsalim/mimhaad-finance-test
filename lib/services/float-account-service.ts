@@ -47,7 +47,7 @@ export class FloatAccountService {
     userId?: string; // Add userId parameter
   }): Promise<FloatAccount> {
     try {
-      console.log("💰 [FLOAT] Creating float account:", data);
+      console.log("[FLOAT] Creating float account:", data);
 
       // Normalize account type for database (convert hyphens to underscores)
       const normalizedAccountType = data.account_type.replace(/-/g, "_");
@@ -145,7 +145,7 @@ export class FloatAccountService {
 
       const floatAccount = result[0];
 
-      console.log("✅ [FLOAT] Float account created:", floatAccount.id);
+      console.log("[FLOAT] Float account created:", floatAccount.id);
 
       // Create GL accounts and mappings using AutoGLMappingService
       try {
@@ -166,7 +166,7 @@ export class FloatAccountService {
           floatAccount.id, // Pass the float account ID
           floatAccount.provider // Pass the actual provider
         );
-        console.log("✅ [FLOAT] GL accounts and mappings created successfully");
+        console.log("[FLOAT] GL accounts and mappings created successfully");
 
         // Create GL entries for initial balance if provided
         if (data.initial_balance && data.initial_balance > 0) {
@@ -183,7 +183,7 @@ export class FloatAccountService {
               );
 
             if (glResult.success) {
-              console.log("✅ [FLOAT] GL entries created for initial balance");
+              console.log("[FLOAT] GL entries created for initial balance");
             } else {
               console.warn(
                 "⚠️ [FLOAT] Failed to create GL entries for initial balance:",
@@ -192,7 +192,7 @@ export class FloatAccountService {
             }
           } catch (glEntryError) {
             console.error(
-              "❌ [FLOAT] Failed to create GL entries for initial balance:",
+              "[FLOAT] Failed to create GL entries for initial balance:",
               glEntryError
             );
             // Don't fail the entire operation for GL entry issues
@@ -200,7 +200,7 @@ export class FloatAccountService {
         }
       } catch (glError) {
         console.error(
-          "❌ [FLOAT] Failed to create GL accounts/mappings:",
+          "[FLOAT] Failed to create GL accounts/mappings:",
           glError
         );
         // Don't fail the entire operation for GL mapping issues
@@ -235,7 +235,7 @@ export class FloatAccountService {
           .replace(/\b\w/g, (l) => l.toUpperCase())} Account`, // Generate name
       };
     } catch (error) {
-      console.error("❌ [FLOAT] Error creating float account:", error);
+      console.error("[FLOAT] Error creating float account:", error);
       throw new Error("Failed to create float account");
     }
   }
@@ -263,7 +263,7 @@ export class FloatAccountService {
       );
 
       console.log(
-        `✅ [FLOAT] Created reversal mappings for ${floatAccount.account_type}`
+        `[FLOAT] Created reversal mappings for ${floatAccount.account_type}`
       );
     } catch (error) {
       console.warn(
@@ -807,10 +807,10 @@ export class FloatAccountService {
       }
 
       console.log(
-        `✅ [FLOAT] Successfully deactivated float account and cleaned up GL resources: ${id}`
+        `[FLOAT] Successfully deactivated float account and cleaned up GL resources: ${id}`
       );
     } catch (error) {
-      console.error("❌ [FLOAT] Error deactivating float account:", error);
+      console.error("[FLOAT] Error deactivating float account:", error);
       throw new Error(
         `Failed to deactivate float account: ${
           error instanceof Error ? error.message : String(error)
@@ -907,10 +907,10 @@ export class FloatAccountService {
       `;
 
       console.log(
-        `✅ [FLOAT] Successfully deleted float account and GL resources: ${id}`
+        `[FLOAT] Successfully deleted float account and GL resources: ${id}`
       );
     } catch (error) {
-      console.error("❌ [FLOAT] Error deleting float account:", error);
+      console.error("[FLOAT] Error deleting float account:", error);
       throw new Error(
         `Failed to delete float account: ${
           error instanceof Error ? error.message : String(error)

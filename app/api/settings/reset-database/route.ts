@@ -153,9 +153,9 @@ async function resetDatabase(currentAdminId: string) {
     // Test database connection and basic query
     try {
       const testResult = await sql`SELECT 1 as test`;
-      console.log(`✅ Database connection test: ${testResult[0]?.test}`);
+      console.log(`Database connection test: ${testResult[0]?.test}`);
     } catch (err: any) {
-      console.log(`❌ Database connection test failed:`, err.message);
+      console.log(`Database connection test failed:`, err.message);
       throw err;
     }
 
@@ -169,12 +169,12 @@ async function resetDatabase(currentAdminId: string) {
         ORDER BY table_name
       `;
 
-      console.log("📋 Actual tables in database:");
+      console.log("Actual tables in database:");
       actualTables.forEach((table: any) => {
         console.log(`  - ${table.table_name}`);
       });
     } catch (err: any) {
-      console.log(`❌ Could not get table list:`, err.message);
+      console.log(`Could not get table list:`, err.message);
     }
 
     // Disable constraints
@@ -209,9 +209,9 @@ async function resetDatabase(currentAdminId: string) {
         const result = await sql`SELECT COUNT(*) as count FROM ${sql.unsafe(
           tableName
         )}`;
-        console.log("🔍 [RESET DATABASE] Table count result:", result);
+        console.log("[RESET DATABASE] Table count result:", result);
         const before = result[0]?.count || "0";
-        console.log(`📊 ${tableName}: ${before} rows before delete`);
+        console.log(`${tableName}: ${before} rows before delete`);
 
         if (before === "0") {
           console.log(`✓ ${tableName} already empty, skipping delete`);
@@ -232,11 +232,11 @@ async function resetDatabase(currentAdminId: string) {
         const after = afterResult[0]?.count || "0";
         console.log(
           after === "0"
-            ? `✅ Successfully cleared ${tableName}`
+            ? `Successfully cleared ${tableName}`
             : `⚠ ${tableName} still has ${after} rows after deletion`
         );
       } catch (err: any) {
-        console.log(`❌ Error processing ${tableName}:`, err.message);
+        console.log(`Error processing ${tableName}:`, err.message);
       }
     }
 
@@ -262,15 +262,15 @@ async function resetDatabase(currentAdminId: string) {
     for (const seq of sequencesToReset) {
       try {
         await sql.unsafe(`ALTER SEQUENCE IF EXISTS "${seq}" RESTART WITH 1`);
-        console.log(`🔄 Reset sequence: ${seq}`);
+        console.log(`Reset sequence: ${seq}`);
       } catch (err: any) {
         console.log(`⚠ Could not reset sequence ${seq}:`, err.message);
       }
     }
 
-    console.log("✅ Database reset complete. Admin user preserved.");
+    console.log("Database reset complete. Admin user preserved.");
   } catch (err: any) {
-    console.error("❌ Database reset failed:", err.message);
+    console.error("Database reset failed:", err.message);
     throw err;
   }
 }

@@ -45,7 +45,7 @@ export function useBranchFloatAccounts(): UseBranchFloatAccountsReturn {
         setError(null);
 
         devLog.info(
-          "🔍 [FLOAT-ACCOUNTS] Fetching accounts for branch:",
+          "[FLOAT-ACCOUNTS] Fetching accounts for branch:",
           user.branchId
         );
 
@@ -60,7 +60,7 @@ export function useBranchFloatAccounts(): UseBranchFloatAccountsReturn {
         }
 
         devLog.info(
-          `✅ [FLOAT-ACCOUNTS] Loaded ${data.accounts?.length || 0} accounts`
+          `[FLOAT-ACCOUNTS] Loaded ${data.accounts?.length || 0} accounts`
         );
 
         // Enhanced filtering for MoMo accounts to include ALL providers with null safety

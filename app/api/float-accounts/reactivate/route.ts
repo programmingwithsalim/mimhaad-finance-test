@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("💰 [FLOAT] Reactivating account:", accountId);
+    console.log("[FLOAT] Reactivating account:", accountId);
 
     // TEMP: Hardcoded user (replace with real auth later)
     const user = {
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `;
 
-    console.log("✅ [FLOAT] Account reactivated successfully:", result.rows[0]);
+    console.log("[FLOAT] Account reactivated successfully:", result.rows[0]);
 
     return NextResponse.json({
       success: true,
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       message: "Float account reactivated successfully",
     });
   } catch (error) {
-    console.error("❌ [FLOAT] Error reactivating account:", error);
+    console.error("[FLOAT] Error reactivating account:", error);
     return NextResponse.json(
       {
         success: false,

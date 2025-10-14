@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get("dateTo");
     const provider = searchParams.get("provider");
 
-    console.log("📊 Fetching Power statistics with filters:", {
+    console.log("Fetching Power statistics with filters:", {
       branchId,
       dateFrom,
       dateTo,
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     }
     const stats = statsResult[0] || {};
 
-    console.log("📊 [POWER] Stats result:", stats);
+    console.log("[POWER] Stats result:", stats);
 
     // --- Today's stats ---
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
@@ -285,7 +285,7 @@ export async function GET(request: NextRequest) {
       })),
     };
 
-    console.log("✅ Power statistics fetched successfully:", {
+    console.log("Power statistics fetched successfully:", {
       summary: statistics.summary,
       providerCount: statistics.byProvider.length,
       typeCount: statistics.byType.length,
@@ -297,7 +297,7 @@ export async function GET(request: NextRequest) {
       data: statistics,
     });
   } catch (error) {
-    console.error("❌ Error fetching Power statistics:", error);
+    console.error("Error fetching Power statistics:", error);
     return NextResponse.json(
       {
         success: false,

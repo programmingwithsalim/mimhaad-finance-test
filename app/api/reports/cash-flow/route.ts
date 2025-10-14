@@ -82,17 +82,42 @@ export async function GET(request: Request) {
 
     const netIncome = totalRevenue - totalExpenses;
 
-    // Depreciation (from fixed assets)
+    // Depreciation (calculate for the period)
+    // For each active asset, calculate depreciation for the reporting period
+    // Annual Depreciation = (Purchase Cost - Salvage Value) / Useful Life
+    // Period Depreciation = Annual Depreciation × (Days in Period / 365)
+
+    // Set default dates for depreciation calculation
+    const depreciationStartDate = from || "1900-01-01";
+    const depreciationEndDate = to || new Date().toISOString().split("T")[0];
+
     const depreciationResult = await sql`
-      SELECT COALESCE(SUM(accumulated_depreciation), 0) as total_depreciation
+      SELECT 
+        COALESCE(
+          SUM(
+            CASE 
+              -- If asset was purchased during the period, calculate from purchase date to end of period
+              WHEN purchase_date::date >= ${depreciationStartDate}::date 
+                THEN ((purchase_cost - COALESCE(salvage_value, 0)) / NULLIF(useful_life, 0)) 
+                     * (EXTRACT(EPOCH FROM AGE(${depreciationEndDate}::date, purchase_date::date)) / (365.0 * 86400))
+              -- If asset existed before period, calculate for full period
+              ELSE ((purchase_cost - COALESCE(salvage_value, 0)) / NULLIF(useful_life, 0)) 
+                   * (EXTRACT(EPOCH FROM AGE(${depreciationEndDate}::date, ${depreciationStartDate}::date)) / (365.0 * 86400))
+            END
+          ), 
+          0
+        ) as period_depreciation
       FROM fixed_assets 
-      WHERE status = 'active' ${
-        effectiveBranchId && effectiveBranchId !== "all"
-          ? sql`AND fixed_assets.branch_id = ${effectiveBranchId}`
-          : sql``
-      }
+      WHERE status = 'active'
+        AND purchase_date::date <= ${depreciationEndDate}::date
+        ${
+          effectiveBranchId && effectiveBranchId !== "all"
+            ? sql`AND fixed_assets.branch_id = ${effectiveBranchId}`
+            : sql``
+        }
     `;
-    const depreciation = Number(depreciationResult[0].total_depreciation) || 0;
+
+    const depreciation = Number(depreciationResult[0].period_depreciation) || 0;
 
     // Changes in Working Capital
     // Accounts Receivable (pending transactions)
@@ -183,15 +208,17 @@ export async function GET(request: Request) {
     const netChangeInCash =
       netCashFromOperations + netCashFromInvesting + netCashFromFinancing;
 
-    // Ending Cash Balance
+    // Ending Cash Balance (excluding Jumia - we don't own it)
     const endingCashResult = await sql`
       SELECT COALESCE(SUM(current_balance), 0) as total_cash
       FROM float_accounts 
-      WHERE is_active = true ${
-        effectiveBranchId && effectiveBranchId !== "all"
-          ? sql`AND float_accounts.branch_id = ${effectiveBranchId}`
-          : sql``
-      }
+      WHERE is_active = true 
+        AND account_type != 'jumia'
+        ${
+          effectiveBranchId && effectiveBranchId !== "all"
+            ? sql`AND float_accounts.branch_id = ${effectiveBranchId}`
+            : sql``
+        }
     `;
     const endingCashBalance = Number(endingCashResult[0].total_cash) || 0;
 
@@ -214,12 +241,11 @@ export async function GET(request: Request) {
     const inventoryChange =
       Number(inventoryChangeResult[0].inventory_value) || 0;
 
-    // Get settlement arrears changes
-    const settlementsResult = await sql`
-      SELECT COALESCE(SUM(ABS(current_balance)), 0) as total_arrears
+    // Get Jumia float changes (all treated as liability/accounts payable)
+    const jumiaFloatResult = await sql`
+      SELECT COALESCE(SUM(ABS(current_balance)), 0) as total_jumia_float
       FROM float_accounts 
       WHERE is_active = true 
-        AND current_balance < 0
         AND account_type = 'jumia'
         ${
           effectiveBranchId && effectiveBranchId !== "all"
@@ -227,7 +253,8 @@ export async function GET(request: Request) {
             : sql``
         }
     `;
-    const settlementsArrears = Number(settlementsResult[0].total_arrears) || 0;
+    const settlementsArrears =
+      Number(jumiaFloatResult[0].total_jumia_float) || 0;
 
     // Get equity adjustments (from equity transactions)
     const equityIntroducedResult = await sql`
@@ -277,7 +304,8 @@ export async function GET(request: Request) {
         period: { from, to },
         operatingActivities: {
           netProfit: { note: 28, value: netIncome },
-          adjustmentsForNonCashItems: { note: null, value: depreciation },
+          depreciation: { note: null, value: depreciation },
+          otherNonCashCharges: { note: null, value: 0 },
           operatingProfitBeforeWorkingCapital: netIncome + depreciation,
           workingCapitalChanges: {
             accountsReceivable: { note: 29, value: -accountsReceivable },

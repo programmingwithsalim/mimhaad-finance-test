@@ -120,7 +120,7 @@ export function FeeConfigSettings({
   const onSubmit = async (data: FeeConfigFormValues) => {
     try {
       setIsLoading(true);
-      console.log("📝 [FRONTEND] Submitting fee config data:", data);
+      console.log("[FRONTEND] Submitting fee config data:", data);
 
       const payload = {
         ...data,
@@ -162,7 +162,7 @@ export function FeeConfigSettings({
       console.log("📥 [FRONTEND] Response body:", result);
 
       if (response.ok && result.success) {
-        console.log("✅ [FRONTEND] Success - showing toast and refreshing");
+        console.log("[FRONTEND] Success - showing toast and refreshing");
         toast({
           title: "Success",
           description: `Fee configuration ${
@@ -173,13 +173,13 @@ export function FeeConfigSettings({
         setEditingConfig(null);
         setShowForm(false);
         await fetchFeeConfigs();
-        console.log("✅ [FRONTEND] Form reset and data refreshed");
+        console.log("[FRONTEND] Form reset and data refreshed");
       } else {
-        console.log("❌ [FRONTEND] Error in response:", result.error);
+        console.log("[FRONTEND] Error in response:", result.error);
         throw new Error(result.error || "Failed to save fee configuration");
       }
     } catch (error) {
-      console.error("❌ [FRONTEND] Error saving fee config:", error);
+      console.error("[FRONTEND] Error saving fee config:", error);
       toast({
         title: "Error",
         description:

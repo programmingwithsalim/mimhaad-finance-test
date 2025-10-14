@@ -40,7 +40,7 @@ export interface NotificationData {
 export class NotificationService {
   static async sendNotification(data: NotificationData) {
     try {
-      console.log("🔔 Sending notification:", {
+      console.log("Sending notification:", {
         type: data.type,
         title: data.title,
         userId: data.userId,
@@ -50,16 +50,13 @@ export class NotificationService {
       // Get user notification preferences
       const userPrefs = await this.getUserNotificationSettings(data.userId);
       if (!userPrefs) {
-        console.log(
-          "❌ No notification preferences found for user:",
-          data.userId
-        );
+        console.log("No notification preferences found for user:", data.userId);
         return { success: false, error: "No notification preferences found" };
       }
 
       // Check if we should send this type of notification
       if (!this.shouldSendNotification(data.type, userPrefs)) {
-        console.log("❌ Notification type disabled:", data.type);
+        console.log("Notification type disabled:", data.type);
         return { success: false, error: "Notification type disabled" };
       }
 
@@ -68,7 +65,7 @@ export class NotificationService {
         userPrefs.phone_number = formatGhanaPhoneNumber(userPrefs.phone_number);
       }
 
-      console.log("✅ Notification preferences loaded:", {
+      console.log("Notification preferences loaded:", {
         email: userPrefs.email_enabled,
         sms: userPrefs.sms_enabled,
         push: userPrefs.push_enabled,
@@ -93,7 +90,7 @@ export class NotificationService {
         results.push({ channel: "push", ...pushResult });
       }
 
-      // ✅ CRITICAL: Save notification to database for in-app display
+      // CRITICAL: Save notification to database for in-app display
       try {
         await sql`
           INSERT INTO notifications (
@@ -116,16 +113,16 @@ export class NotificationService {
             'unread'
           )
         `;
-        console.log("✅ Notification saved to database");
+        console.log("Notification saved to database");
       } catch (dbError) {
-        console.error("❌ Failed to save notification to database:", dbError);
+        console.error("Failed to save notification to database:", dbError);
         // Don't fail the entire notification if DB save fails
       }
 
-      console.log("✅ Notification sent successfully");
+      console.log("Notification sent successfully");
       return { success: true, results };
     } catch (error) {
-      console.error("❌ Error sending notification:", error);
+      console.error("Error sending notification:", error);
       return {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
@@ -259,7 +256,7 @@ export class NotificationService {
       }
 
       const user = userInfo[0];
-      console.log("🔍 [NOTIFICATION] User info:", {
+      console.log("[NOTIFICATION] User info:", {
         userId,
         userPhone: user.phone,
         userEmail: user.email,
@@ -310,10 +307,7 @@ export class NotificationService {
           )
         `;
 
-        console.log(
-          "✅ Created default notification settings for user:",
-          userId
-        );
+        console.log("Created default notification settings for user:", userId);
 
         // Return default settings with user's phone and email
         return {
@@ -336,7 +330,7 @@ export class NotificationService {
       const phoneNumber = setting.phone_number || user.phone;
       const emailAddress = setting.email_address || user.email;
 
-      // ✅ CRITICAL: Fetch system SMS config if user doesn't have it
+      // CRITICAL: Fetch system SMS config if user doesn't have it
       let systemSMSConfig: any = {};
       if (!setting.sms_provider || !setting.sms_api_key) {
         try {
@@ -352,13 +346,13 @@ export class NotificationService {
             acc[row.config_key] = row.config_value;
             return acc;
           }, {});
-          console.log("✅ Loaded system SMS config as fallback");
+          console.log("Loaded system SMS config as fallback");
         } catch (error) {
           console.error("Failed to load system SMS config:", error);
         }
       }
 
-      console.log("🔍 [NOTIFICATION] Final settings:", {
+      console.log("[NOTIFICATION] Final settings:", {
         userId,
         notificationPhone: setting.phone_number,
         userPhone: user.phone,
@@ -480,7 +474,7 @@ export class NotificationService {
       }
 
       // Send email using your email service
-      console.log("📧 Sending email to:", prefs.email_address);
+      console.log("Sending email to:", prefs.email_address);
 
       // Simulate email sending
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -526,7 +520,7 @@ export class NotificationService {
       const senderId = prefs.sms_sender_id;
       const message = data.message;
 
-      console.log("🔍 [SMS] Configuration:", {
+      console.log("[SMS] Configuration:", {
         provider,
         apiKey: apiKey ? "***" : "missing",
         apiSecret: apiSecret ? "***" : "missing",
@@ -584,7 +578,7 @@ export class NotificationService {
           };
         }
 
-        console.log("🔐 Hubtel URL Authentication:", {
+        console.log("Hubtel URL Authentication:", {
           clientId: clientId ? "***" : "MISSING",
           clientSecret: clientSecret ? "***" : "MISSING",
           senderId,
@@ -605,7 +599,7 @@ export class NotificationService {
           },
         });
         const result = await response.json();
-        console.log("🔍 [HUBTEL] API Response:", result);
+        console.log("[HUBTEL] API Response:", result);
 
         // Hubtel returns status: 0 for success, or other values for failure
         if (result.status === 0 || (result.data && result.data.status === 0)) {
@@ -741,7 +735,7 @@ export class NotificationService {
           }),
         });
         const result = await response.json();
-        console.log("🔍 [HUBTEL TEST] API Response:", result);
+        console.log("[HUBTEL TEST] API Response:", result);
 
         // Hubtel returns status: 0 for success, or other values for failure
         if (result.status === 0 || (result.data && result.data.status === 0)) {

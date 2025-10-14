@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { date, recipientEmails, branchId } = body;
 
-    console.log("📧 [EMAIL] Generating daily summary report...");
+    console.log("[EMAIL] Generating daily summary report...");
 
     // Get current user
     const user = await getCurrentUser(request);
@@ -371,14 +371,14 @@ export async function POST(request: NextRequest) {
           html: emailHtml,
         });
         sentCount++;
-        console.log(`✅ [EMAIL] Daily summary sent to ${email}`);
+        console.log(`[EMAIL] Daily summary sent to ${email}`);
       } catch (error) {
-        console.error(`❌ [EMAIL] Failed to send to ${email}:`, error);
+        console.error(`[EMAIL] Failed to send to ${email}:`, error);
       }
     }
 
     console.log(
-      `✅ [EMAIL] Daily summary reports sent: ${sentCount}/${recipients.length}`
+      `[EMAIL] Daily summary reports sent: ${sentCount}/${recipients.length}`
     );
 
     return NextResponse.json({
@@ -394,7 +394,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ [EMAIL] Error sending daily summary:", error);
+    console.error("[EMAIL] Error sending daily summary:", error);
     return NextResponse.json(
       {
         success: false,
@@ -507,7 +507,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ [EMAIL] Error previewing daily summary:", error);
+    console.error("[EMAIL] Error previewing daily summary:", error);
     return NextResponse.json(
       {
         success: false,
@@ -520,4 +520,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
           WHERE id = ${partner_account_id}
         `;
         console.log(
-          `🔄 [CARD ISSUANCE] Updated float account ${partner_account_id} balance by ${feeAmount}`
+          `[CARD ISSUANCE] Updated float account ${partner_account_id} balance by ${feeAmount}`
         );
       } catch (floatError) {
         console.error("Failed to update float account balance:", floatError);

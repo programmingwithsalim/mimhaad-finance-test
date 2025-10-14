@@ -553,14 +553,14 @@ export async function createMoMoTransaction(transactionData: {
 
       if (glResult.success) {
         console.log(
-          "✅ [MOMO] GL entries created successfully for transaction:",
+          "[MOMO] GL entries created successfully for transaction:",
           transaction.id
         );
       } else {
-        console.error("❌ [MOMO] GL posting failed:", glResult.error);
+        console.error("[MOMO] GL posting failed:", glResult.error);
       }
     } catch (glError) {
-      console.error("❌ [MOMO] GL posting error:", glError);
+      console.error("[MOMO] GL posting error:", glError);
       // Continue without failing the transaction
     }
 

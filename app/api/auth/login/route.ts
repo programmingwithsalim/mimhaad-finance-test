@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
         ? Math.ceil((rateLimit.lockedUntil.getTime() - Date.now()) / 60000)
         : 15;
 
-      console.log(`❌ Login blocked for ${email} - too many attempts`);
+      console.log(`Login blocked for ${email} - too many attempts`);
 
       return NextResponse.json(
         {
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (requires2FA) {
-      console.log(`🔐 [2FA] 2FA required for user ${email}`);
+      console.log(`[2FA] 2FA required for user ${email}`);
 
       // Send OTP
       const otpResult = await TwoFactorAuthService.sendOTP(
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       );
 
       if (!otpResult.success) {
-        console.error("❌ [2FA] Failed to send OTP:", otpResult.error);
+        console.error("[2FA] Failed to send OTP:", otpResult.error);
         // Continue with login but warn user
       }
 
@@ -206,10 +206,10 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(
-      "✅ Login response created with session token:",
+      "Login response created with session token:",
       session.sessionToken.substring(0, 10) + "..."
     );
-    console.log("✅ Cookie set in response");
+    console.log("Cookie set in response");
 
     return response;
   } catch (error) {

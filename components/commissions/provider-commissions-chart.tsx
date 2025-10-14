@@ -79,7 +79,7 @@ export function ProviderCommissionsChart({
 
     try {
       console.log(
-        "📊 [COMMISSION CHART] Fetching commission data for time range:",
+        "[COMMISSION CHART] Fetching commission data for time range:",
         timeRange
       );
 
@@ -95,7 +95,7 @@ export function ProviderCommissionsChart({
       }
 
       const data = await response.json();
-      console.log("📊 [COMMISSION CHART] Received data:", data);
+      console.log("[COMMISSION CHART] Received data:", data);
 
       if (data.success && data.data) {
         setChartData(data.data.monthlyData || []);
@@ -104,7 +104,7 @@ export function ProviderCommissionsChart({
         throw new Error(data.error || "Failed to load commission analytics");
       }
     } catch (err) {
-      console.error("❌ [COMMISSION CHART] Error fetching data:", err);
+      console.error("[COMMISSION CHART] Error fetching data:", err);
       setError(
         err instanceof Error ? err.message : "Failed to load commission data"
       );

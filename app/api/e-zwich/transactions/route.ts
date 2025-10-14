@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const offset = (page - 1) * limit;
 
-    console.log("🔍 [E-ZWICH] Fetching transactions for branch:", branchId);
+    console.log("[E-ZWICH] Fetching transactions for branch:", branchId);
 
     // Initialize empty arrays
     let withdrawalTransactions: any[] = [];
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     const totalTransactions = totalWithdrawals + totalIssuances;
 
     console.log(
-      `✅ [E-ZWICH] Found ${allTransactions.length} transactions out of ${totalTransactions} total`
+      `[E-ZWICH] Found ${allTransactions.length} transactions out of ${totalTransactions} total`
     );
 
     return NextResponse.json({
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ [E-ZWICH] Error fetching transactions:", error);
+    console.error("[E-ZWICH] Error fetching transactions:", error);
     return NextResponse.json(
       {
         success: false,

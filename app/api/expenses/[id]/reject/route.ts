@@ -122,7 +122,7 @@ export async function POST(
 
           if (isDev)
             console.log(
-              `✅ Reversed GL entries for rejected expense - Credit: ${expenseAccount.name}, Debit: ${apAccount.name}`
+              `Reversed GL entries for rejected expense - Credit: ${expenseAccount.name}, Debit: ${apAccount.name}`
             );
         }
       }

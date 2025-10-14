@@ -209,7 +209,7 @@ export function TransactionActions({
 
   // Determine which action button to show based on transaction type and status
   const getActionButton = () => {
-    console.log("🔍 Action button check:", {
+    console.log("Action button check:", {
       sourceModule,
       transactionType: transaction.type,
       status: transaction.status,

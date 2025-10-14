@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { startDate, endDate, recipientEmails, branchId } = body;
 
-    console.log("📧 [EMAIL] Generating weekly performance report...");
+    console.log("[EMAIL] Generating weekly performance report...");
 
     // Get current user
     const user = await getCurrentUser(request);
@@ -445,14 +445,14 @@ export async function POST(request: NextRequest) {
           html: emailHtml,
         });
         sentCount++;
-        console.log(`✅ [EMAIL] Weekly report sent to ${email}`);
+        console.log(`[EMAIL] Weekly report sent to ${email}`);
       } catch (error) {
-        console.error(`❌ [EMAIL] Failed to send to ${email}:`, error);
+        console.error(`[EMAIL] Failed to send to ${email}:`, error);
       }
     }
 
     console.log(
-      `✅ [EMAIL] Weekly performance reports sent: ${sentCount}/${recipients.length}`
+      `[EMAIL] Weekly performance reports sent: ${sentCount}/${recipients.length}`
     );
 
     return NextResponse.json({
@@ -466,7 +466,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("❌ [EMAIL] Error sending weekly report:", error);
+    console.error("[EMAIL] Error sending weekly report:", error);
     return NextResponse.json(
       {
         success: false,
@@ -479,4 +479,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

@@ -202,6 +202,28 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
             </Table>
           </div>
 
+          {/* COMMISSIONS */}
+          <div>
+            <div className="bg-primary/10 p-2 mb-2 rounded">
+              <h3 className="font-bold text-lg">LESS: COMMISSIONS</h3>
+            </div>
+            <Table>
+              <TableBody>
+                <TableRow className="bg-orange-50">
+                  <TableCell className="w-[60%] font-semibold">
+                    Commissions Paid
+                  </TableCell>
+                  <TableCell className="text-center w-[10%]">
+                    {profitLossData.commissions.note}
+                  </TableCell>
+                  <TableCell className="text-right w-[30%] text-orange-600 font-semibold">
+                    {formatCurrency(profitLossData.commissions.total)}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
           {/* EXPENSES SECTION */}
           <div>
             <div className="bg-primary/10 p-2 mb-2 rounded">
@@ -259,23 +281,6 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
                     }`}
                   >
                     {formatCurrency(profitLossData.grossProfit)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* COMMISSIONS */}
-          <div>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell className="w-[60%] pl-4">Commissions</TableCell>
-                  <TableCell className="text-center w-[10%]">
-                    {profitLossData.commissions.note}
-                  </TableCell>
-                  <TableCell className="text-right w-[30%] text-green-600">
-                    {formatCurrency(profitLossData.commissions.total)}
                   </TableCell>
                 </TableRow>
               </TableBody>

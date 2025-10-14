@@ -1,18 +1,21 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { neon } from "@neondatabase/serverless"
+import { type NextRequest, NextResponse } from "next/server";
+import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(process.env.DATABASE_URL!);
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const branchId = searchParams.get("branchId")
+    const { searchParams } = new URL(request.url);
+    const branchId = searchParams.get("branchId");
 
     if (!branchId) {
-      return NextResponse.json({ success: false, error: "Branch ID is required" }, { status: 400 })
+      return NextResponse.json(
+        { success: false, error: "Branch ID is required" },
+        { status: 400 }
+      );
     }
 
-    console.log("🔍 [E-ZWICH] Loading settlement accounts for branch:", branchId)
+    console.log("[E-ZWICH] Loading settlement accounts for branch:", branchId);
 
     // Get E-Zwich settlement accounts (account_type = 'e-zwich')
     const accounts = await sql`
@@ -32,9 +35,9 @@ export async function GET(request: NextRequest) {
         AND account_type = 'e-zwich' 
         AND is_active = true
       ORDER BY created_at DESC
-    `
+    `;
 
-    console.log("✅ [E-ZWICH] Found settlement accounts:", accounts.length)
+    console.log("[E-ZWICH] Found settlement accounts:", accounts.length);
 
     return NextResponse.json({
       success: true,
@@ -50,16 +53,16 @@ export async function GET(request: NextRequest) {
         created_at: account.created_at,
         updated_at: account.updated_at,
       })),
-    })
+    });
   } catch (error) {
-    console.error("❌ [E-ZWICH] Error loading settlement accounts:", error)
+    console.error("[E-ZWICH] Error loading settlement accounts:", error);
     return NextResponse.json(
       {
         success: false,
         error: "Failed to load E-Zwich settlement accounts",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 },
-    )
+      { status: 500 }
+    );
   }
 }
