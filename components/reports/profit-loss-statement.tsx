@@ -33,7 +33,7 @@ interface ProfitLossData {
     from: string | null;
     to: string | null;
   };
-  revenue: {
+  fees: {
     breakdown: Array<{
       service: string;
       note: number;
@@ -41,6 +41,11 @@ interface ProfitLossData {
     }>;
     total: number;
   };
+  commissions: {
+    note: number;
+    total: number;
+  };
+  totalRevenue: number;
   expenses: {
     breakdown: Array<{
       category: string;
@@ -49,17 +54,12 @@ interface ProfitLossData {
     }>;
     total: number;
   };
-  grossProfit: number;
-  commissions: {
-    note: number;
-    total: number;
-  };
   netProfit: number;
   summary: {
+    totalFees: number;
+    totalCommissions: number;
     totalRevenue: number;
     totalExpenses: number;
-    grossProfit: number;
-    totalCommissions: number;
     netProfit: number;
     profitMargin: number;
   };
@@ -168,10 +168,10 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-8">
-          {/* REVENUE SECTION */}
+          {/* FEES SECTION */}
           <div>
             <div className="bg-primary/10 p-2 mb-2 rounded">
-              <h3 className="font-bold text-lg">REVENUE</h3>
+              <h3 className="font-bold text-lg">FEES</h3>
             </div>
             <Table>
               <TableHeader>
@@ -182,7 +182,7 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {profitLossData.revenue.breakdown.map((item) => (
+                {profitLossData.fees.breakdown.map((item) => (
                   <TableRow key={item.service}>
                     <TableCell className="pl-4">{item.service}</TableCell>
                     <TableCell className="text-center">{item.note}</TableCell>
@@ -192,32 +192,49 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
                   </TableRow>
                 ))}
                 <TableRow className="font-bold text-base bg-green-50">
-                  <TableCell>Total Revenue</TableCell>
+                  <TableCell>Total Fees</TableCell>
                   <TableCell></TableCell>
                   <TableCell className="text-right text-green-600">
-                    {formatCurrency(profitLossData.revenue.total)}
+                    {formatCurrency(profitLossData.fees.total)}
                   </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
           </div>
 
-          {/* COMMISSIONS */}
+          {/* COMMISSIONS - Added as Revenue */}
           <div>
             <div className="bg-primary/10 p-2 mb-2 rounded">
-              <h3 className="font-bold text-lg">LESS: COMMISSIONS</h3>
+              <h3 className="font-bold text-lg">ADD: COMMISSIONS</h3>
             </div>
             <Table>
               <TableBody>
-                <TableRow className="bg-orange-50">
+                <TableRow className="bg-blue-50">
                   <TableCell className="w-[60%] font-semibold">
-                    Commissions Paid
+                    Commissions Received
                   </TableCell>
                   <TableCell className="text-center w-[10%]">
                     {profitLossData.commissions.note}
                   </TableCell>
-                  <TableCell className="text-right w-[30%] text-orange-600 font-semibold">
+                  <TableCell className="text-right w-[30%] text-blue-600 font-semibold">
                     {formatCurrency(profitLossData.commissions.total)}
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* TOTAL REVENUE */}
+          <div>
+            <Table>
+              <TableBody>
+                <TableRow className="font-bold text-base bg-green-100">
+                  <TableCell className="w-[60%]">
+                    TOTAL REVENUE (Fees + Commissions)
+                  </TableCell>
+                  <TableCell className="text-center w-[10%]"></TableCell>
+                  <TableCell className="text-right w-[30%] text-green-700 font-bold">
+                    {formatCurrency(profitLossData.totalRevenue)}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -227,7 +244,7 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
           {/* EXPENSES SECTION */}
           <div>
             <div className="bg-primary/10 p-2 mb-2 rounded">
-              <h3 className="font-bold text-lg">EXPENSES</h3>
+              <h3 className="font-bold text-lg">LESS: EXPENSES</h3>
             </div>
             <Table>
               <TableHeader>
@@ -248,39 +265,10 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
                   </TableRow>
                 ))}
                 <TableRow className="font-bold text-base bg-red-50">
-                  <TableCell>Total Expense</TableCell>
+                  <TableCell>Total Expenses</TableCell>
                   <TableCell></TableCell>
                   <TableCell className="text-right text-red-600">
                     {formatCurrency(profitLossData.expenses.total)}
-                  </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* GROSS PROFIT/LOSS */}
-          <div>
-            <Table>
-              <TableBody>
-                <TableRow
-                  className={`font-bold text-base ${
-                    profitLossData.grossProfit >= 0
-                      ? "bg-green-50"
-                      : "bg-red-50"
-                  }`}
-                >
-                  <TableCell className="w-[60%]">
-                    Gross Profit/Loss (Total Revenue - Total Expense)
-                  </TableCell>
-                  <TableCell className="text-center w-[10%]"></TableCell>
-                  <TableCell
-                    className={`text-right w-[30%] ${
-                      profitLossData.grossProfit >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {formatCurrency(profitLossData.grossProfit)}
                   </TableCell>
                 </TableRow>
               </TableBody>
@@ -298,7 +286,9 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
                       : "bg-red-100 border-red-300"
                   } border-2`}
                 >
-                  <TableCell className="w-[60%]">NET PROFIT/LOSS</TableCell>
+                  <TableCell className="w-[60%]">
+                    NET PROFIT/LOSS (Total Revenue - Total Expenses)
+                  </TableCell>
                   <TableCell className="text-center w-[10%]"></TableCell>
                   <TableCell
                     className={`text-right w-[30%] text-lg font-bold ${
@@ -358,7 +348,7 @@ export function ProfitLossStatement({ dateRange, branch }: ProfitLossProps) {
               </div>
               <div>
                 <span className="font-medium">21. Commissions:</span> Total
-                commissions received from all floats and services
+                commissions received from all services (added to revenue)
               </div>
             </div>
           </div>

@@ -575,10 +575,10 @@ export default function ReportsPage() {
     page.drawText(
       `GHS ${getValue(data.assets.current.closingInventory).toLocaleString()}`,
       {
-        x: 400,
-        y,
-        size: 10,
-        font: font,
+      x: 400,
+      y,
+      size: 10,
+      font: font,
       }
     );
     y -= 20;
@@ -602,10 +602,10 @@ export default function ReportsPage() {
         data.assets.nonCurrent?.fixedAssetsNet
       ).toLocaleString()}`,
       {
-        x: 400,
-        y,
-        size: 10,
-        font: font,
+      x: 400,
+      y,
+      size: 10,
+      font: font,
       }
     );
     y -= 25;
@@ -619,10 +619,10 @@ export default function ReportsPage() {
     page.drawText(
       `GHS ${data.assets.totalAssets?.toLocaleString() || "0.00"}`,
       {
-        x: 400,
-        y,
-        size: 12,
-        font: boldFont,
+      x: 400,
+      y,
+      size: 12,
+      font: boldFont,
       }
     );
 
@@ -1464,6 +1464,16 @@ export default function ReportsPage() {
                       </h3>
                       <div className="space-y-3">
                         <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                          <span className="font-medium">Share Capital</span>
+                          <span className="font-semibold text-blue-600">
+                            GHS{" "}
+                            {getValue(
+                              reportData.balanceSheet.equity.shareholdersFund
+                                ?.equities
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100">
                           <span className="font-medium">Retained Earnings</span>
                           <span className="font-semibold text-blue-600">
                             GHS{" "}
@@ -1473,9 +1483,21 @@ export default function ReportsPage() {
                             ).toLocaleString()}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center py-4 border-t-2 border-blue-200 font-bold text-lg">
-                          <span>Total Equity</span>
-                          <span className="text-blue-600">
+                        <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                          <span className="font-medium">
+                            Profit for the Year
+                          </span>
+                          <span className="font-semibold text-blue-600">
+                            GHS{" "}
+                            {getValue(
+                              reportData.balanceSheet.equity.shareholdersFund
+                                ?.profitForTheYear
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-4 border-t-2 border-blue-300 bg-blue-50 px-3 rounded-lg font-bold text-lg">
+                          <span>Shareholder Fund</span>
+                          <span className="text-blue-700">
                             GHS{" "}
                             {reportData.balanceSheet.equity.shareholdersFund?.total?.toLocaleString() ||
                               "0.00"}

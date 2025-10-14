@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
-import { CreditCard, User, Building } from "lucide-react";
+import { CreditCard, User, Building, Smartphone, Flag } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +41,7 @@ export function EZwichCardIssuance() {
   const { toast } = useToast();
   const { user } = useCurrentUser();
 
+  const [inventoryType, setInventoryType] = useState<string>("sim");
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [selectedPartnerBank, setSelectedPartnerBank] = useState<string>("");
   const [partnerBanks, setPartnerBanks] = useState<PartnerBank[]>([]);
@@ -92,22 +93,46 @@ export function EZwichCardIssuance() {
     }
   }, [user?.branchId, toast]);
 
-  // Filter available batches (those with cards remaining)
+  // Filter available batches by inventory type and quantity
   const availableBatches =
-    batches?.filter((batch) => batch.quantity_available > 0) || [];
+    batches?.filter(
+      (batch) =>
+        batch.quantity_available > 0 &&
+        (batch.inventory_type === inventoryType ||
+          (!batch.inventory_type && inventoryType === "e-zwich"))
+    ) || [];
+
+  // Debug logging
+  useEffect(() => {
+    console.log("Selected inventory type:", inventoryType);
+    console.log("All batches:", batches);
+    console.log("Filtered batches:", availableBatches);
+  }, [inventoryType, batches, availableBatches]);
+
+  // Get inventory type labels
+  const getInventoryLabel = (type: string) => {
+    switch (type) {
+      case "sim":
+        return { singular: "SIM Card", plural: "SIM Cards", icon: Smartphone };
+      case "rollers":
+        return {
+          singular: "Roller Banner",
+          plural: "Roller Banners",
+          icon: Flag,
+        };
+      default:
+        return { singular: "Item", plural: "Items", icon: Smartphone };
+    }
+  };
+
+  const inventoryLabel = getInventoryLabel(inventoryType);
+  const InventoryIcon = inventoryLabel.icon;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !selectedBatch ||
-      !selectedPartnerBank ||
-      !customerName ||
-      !customerPhone ||
-      !customerIdNumber ||
-      !customerIdType ||
-      !cardNumber
-    ) {
+    // Simple validation - only need batch, name, phone, and item number
+    if (!selectedBatch || !customerName || !customerPhone || !cardNumber) {
       toast({
         title: "Missing information",
         description: "Please fill in all required fields.",
@@ -119,34 +144,42 @@ export function EZwichCardIssuance() {
     setIsSubmitting(true);
 
     try {
-      await issueCard({
-        card_number: cardNumber,
-        batch_id: selectedBatch,
-        partner_bank: selectedPartnerBank,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        customer_id_number: customerIdNumber,
-        customer_id_type: customerIdType,
+      // Use simplified inventory API instead of E-Zwich card API
+      const response = await fetch("/api/inventory/issue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          batch_id: selectedBatch,
+          item_number: cardNumber,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          notes: `${inventoryLabel.singular} issuance`,
+        }),
       });
 
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Failed to issue item");
+      }
+
       toast({
-        title: "Card issued successfully",
-        description: `Card ${cardNumber} has been issued to ${customerName} from batch ${
+        title: `${inventoryLabel.singular} issued successfully`,
+        description: `${
+          inventoryLabel.singular
+        } ${cardNumber} has been issued to ${customerName} from batch ${
           selectedBatchData?.batch_code || "Unknown"
         }.`,
       });
 
       // Reset form
       setSelectedBatch("");
-      setSelectedPartnerBank("");
       setCustomerName("");
       setCustomerPhone("");
-      setCustomerIdNumber("");
-      setCustomerIdType("");
       setCardNumber("");
     } catch (error) {
       toast({
-        title: "Failed to issue card",
+        title: `Failed to issue ${inventoryLabel.singular.toLowerCase()}`,
         description:
           error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
@@ -167,82 +200,88 @@ export function EZwichCardIssuance() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center">
-          <CreditCard className="h-5 w-5 mr-2" />
-          Issue New E-Zwich Card
+          <InventoryIcon className="h-5 w-5 mr-2" />
+          Issue {inventoryLabel.singular}
         </CardTitle>
         <CardDescription>
-          Issue a new E-Zwich card to a customer
+          Issue a new {inventoryLabel.singular.toLowerCase()} to a customer
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Partner Bank Selection */}
+          {/* Inventory Type Selection */}
           <div className="space-y-2">
-            <Label htmlFor="partnerBank">Partner Bank *</Label>
+            <Label htmlFor="inventoryType">Inventory Type *</Label>
             <Select
-              value={selectedPartnerBank}
-              onValueChange={setSelectedPartnerBank}
+              value={inventoryType}
+              onValueChange={(value) => {
+                setInventoryType(value);
+                setSelectedBatch(""); // Reset batch when type changes
+              }}
             >
               <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    loadingBanks
-                      ? "Loading partner banks..."
-                      : "Select partner bank"
-                  }
-                />
+                <SelectValue placeholder="Select inventory type" />
               </SelectTrigger>
               <SelectContent>
-                {partnerBanks.map((bank) => (
-                  <SelectItem key={bank.id} value={bank.id}>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{bank.bank_name}</span>
-                      <Badge variant="secondary" className="ml-2">
-                        {bank.account_name}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                ))}
+                <SelectItem value="sim">
+                  <div className="flex items-center">
+                    <Smartphone className="h-4 w-4 mr-2" />
+                    SIM Cards
+                  </div>
+                </SelectItem>
+                <SelectItem value="rollers">
+                  <div className="flex items-center">
+                    <Flag className="h-4 w-4 mr-2" />
+                    Roller Banners
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
-            {selectedBankData && (
-              <div className="text-sm text-muted-foreground">
-                Bank: {selectedBankData.bank_name} • Account:{" "}
-                {selectedBankData.account_name} • Balance: GHS{" "}
-                {selectedBankData.current_balance.toLocaleString()}
-              </div>
-            )}
           </div>
 
           {/* Batch Selection */}
           <div className="space-y-2">
-            <Label htmlFor="batch">Select Card Batch *</Label>
+            <Label htmlFor="batch">
+              Select {inventoryLabel.singular} Batch *
+            </Label>
             <Select value={selectedBatch} onValueChange={setSelectedBatch}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose an available batch" />
               </SelectTrigger>
               <SelectContent>
-                {availableBatches.map((batch) => (
-                  <SelectItem key={batch.id} value={batch.id}>
-                    <div className="flex flex-col w-full">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{batch.batch_code}</span>
-                        <Badge variant="secondary">
-                          {batch.quantity_available} available
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {batch.partner_bank_name &&
-                          `Bank: ${batch.partner_bank_name} • `}
-                        Type: {batch.card_type} • Received:{" "}
-                        {batch.quantity_received} • Issued:{" "}
-                        {batch.quantity_issued}
-                      </div>
-                    </div>
+                {availableBatches.length === 0 ? (
+                  <SelectItem value="no-batch" disabled>
+                    No {inventoryLabel.plural.toLowerCase()} batches available
                   </SelectItem>
-                ))}
+                ) : (
+                  availableBatches.map((batch) => (
+                    <SelectItem key={batch.id} value={batch.id}>
+                      <div className="flex flex-col w-full">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">
+                            {batch.batch_code}
+                          </span>
+                          <Badge variant="secondary">
+                            {batch.quantity_available} available
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Type: {batch.inventory_type || "e-zwich"} • Received:{" "}
+                          {batch.quantity_received} • Issued:{" "}
+                          {batch.quantity_issued}
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            {availableBatches.length === 0 && (
+              <div className="text-sm text-orange-600 mt-2">
+                No {inventoryLabel.plural.toLowerCase()} batches found. Please
+                add a batch with inventory_type = "{inventoryType}" first.
+              </div>
+            )}
 
             {selectedBatchData && (
               <div className="p-3 bg-muted rounded-lg">
@@ -277,22 +316,26 @@ export function EZwichCardIssuance() {
                 </div>
                 <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-sm">
                   <span className="font-medium text-blue-800">
-                    ⚠️ This batch will be deducted by 1 card when you issue.
+                    ⚠️ This batch will be deducted by 1{" "}
+                    {inventoryLabel.singular.toLowerCase()} when you issue.
                   </span>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Card Number */}
+          {/* Card/Item Number */}
           <div className="space-y-2">
-            <Label htmlFor="cardNumber">Card Number *</Label>
+            <Label htmlFor="cardNumber">Item ID / Serial Number *</Label>
             <Input
               id="cardNumber"
               value={cardNumber}
               onChange={(e) => setCardNumber(e.target.value)}
-              placeholder="Enter 16-20 digit card number"
-              pattern="[0-9]{16,20}"
+              placeholder={
+                inventoryType === "sim"
+                  ? "Enter SIM card number or ICCID"
+                  : "Enter serial number or identifier"
+              }
               required
             />
           </div>
@@ -302,18 +345,29 @@ export function EZwichCardIssuance() {
             <div className="flex items-center space-x-2">
               <User className="h-4 w-4" />
               <Label className="text-base font-medium">
-                Customer Information
+                {inventoryType === "rollers"
+                  ? "Client Information"
+                  : "Customer Information"}
               </Label>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="customerName">Full Name *</Label>
+                <Label htmlFor="customerName">
+                  {inventoryType === "rollers"
+                    ? "Client/Company Name"
+                    : "Full Name"}{" "}
+                  *
+                </Label>
                 <Input
                   id="customerName"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Customer full name"
+                  placeholder={
+                    inventoryType === "rollers"
+                      ? "Client or company name"
+                      : "Customer full name"
+                  }
                   required
                 />
               </div>
@@ -328,37 +382,6 @@ export function EZwichCardIssuance() {
                   required
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customerIdType">ID Type *</Label>
-                <Select
-                  value={customerIdType}
-                  onValueChange={setCustomerIdType}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select ID type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="national_id">National ID</SelectItem>
-                    <SelectItem value="passport">Passport</SelectItem>
-                    <SelectItem value="drivers_license">
-                      Driver's License
-                    </SelectItem>
-                    <SelectItem value="voters_id">Voter's ID</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customerIdNumber">ID Number *</Label>
-                <Input
-                  id="customerIdNumber"
-                  value={customerIdNumber}
-                  onChange={(e) => setCustomerIdNumber(e.target.value)}
-                  placeholder="Enter ID number"
-                  required
-                />
-              </div>
             </div>
           </div>
 
@@ -368,13 +391,9 @@ export function EZwichCardIssuance() {
             </Button>
             <Button
               type="submit"
-              disabled={
-                isSubmitting ||
-                availableBatches.length === 0 ||
-                partnerBanks.length === 0
-              }
+              disabled={isSubmitting || availableBatches.length === 0}
             >
-              {isSubmitting ? "Issuing..." : "Issue Card"}
+              {isSubmitting ? "Issuing..." : `Issue ${inventoryLabel.singular}`}
             </Button>
           </div>
         </form>

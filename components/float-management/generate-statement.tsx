@@ -155,20 +155,32 @@ export function GenerateStatement({
 
       if (result.success && result.data) {
         // Transform optimized format to expected format
-        const transformedEntries = result.data.entries.map((entry: any) => ({
-          id: entry.id,
-          transactionDate: entry.date,
-          transactionType: entry.type,
-          amount: entry.debit > 0 ? entry.debit : -entry.credit,
-          balanceBefore: 0,
-          balanceAfter: entry.balance,
-          description: entry.description,
-          reference: entry.reference,
-          sourceModule: entry.source,
-          processedBy: entry.processedBy,
-          branchId: "",
-          branchName: "",
-        }));
+        const transformedEntries = result.data.entries.map((entry: any) => {
+          console.log("Transforming entry:", {
+            reference: entry.reference,
+            debit: entry.debit,
+            credit: entry.credit,
+            balance: entry.balance,
+            type: entry.type,
+          });
+
+          return {
+            id: entry.id,
+            transactionDate: entry.date,
+            transactionType: entry.type,
+            amount: entry.debit > 0 ? entry.debit : -entry.credit,
+            balanceBefore: 0,
+            balanceAfter: entry.balance,
+            debit: entry.debit,
+            credit: entry.credit,
+            description: entry.description,
+            reference: entry.reference,
+            sourceModule: entry.source,
+            processedBy: entry.processedBy,
+            branchId: "",
+            branchName: "",
+          };
+        });
 
         setEntries(transformedEntries);
         setSummary({
@@ -808,10 +820,16 @@ export function GenerateStatement({
               </TableHeader>
               <TableBody>
                 {entries.map((entry, index) => {
-                  // Debit = positive amounts (adds to float)
-                  const debit = entry.amount > 0 ? entry.amount : 0;
-                  // Credit = negative amounts shown as positive (subtracts from float)
-                  const credit = entry.amount < 0 ? Math.abs(entry.amount) : 0;
+                  // Use actual debit/credit from API instead of calculating from amount
+                  const debit = entry.debit || 0;
+                  const credit = entry.credit || 0;
+
+                  console.log(`Displaying row ${index}:`, {
+                    reference: entry.reference,
+                    debit,
+                    credit,
+                    balanceAfter: entry.balanceAfter,
+                  });
 
                   return (
                     <TableRow key={`${entry.id}-${index}`}>
@@ -844,7 +862,12 @@ export function GenerateStatement({
                         )}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
-                        {formatCurrency(entry.balanceAfter)}
+                        {entry.balanceAfter !== null &&
+                        entry.balanceAfter !== undefined ? (
+                          formatCurrency(entry.balanceAfter)
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {entry.description}

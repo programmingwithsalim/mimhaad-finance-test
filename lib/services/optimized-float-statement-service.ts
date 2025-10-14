@@ -86,6 +86,7 @@ export class OptimizedFloatStatementService {
 
       if (isPaymentFloat) {
         // For payment floats: Include specific mappings + generic transaction-type mappings
+        // ONLY show 'main' mapping type to avoid duplicate entries
         glMappings = await sql`
           SELECT 
             ga.id as gl_account_id,
@@ -105,10 +106,10 @@ export class OptimizedFloatStatementService {
             )
           )
           AND gm.is_active = true
-          AND gm.mapping_type IN ('main', 'asset', 'liability')
+          AND gm.mapping_type = 'main'
         `;
       } else {
-        // For service floats: ONLY specific mappings
+        // For service floats: ONLY specific 'main' mappings
         glMappings = await sql`
           SELECT 
             ga.id as gl_account_id,
@@ -118,7 +119,7 @@ export class OptimizedFloatStatementService {
           JOIN gl_accounts ga ON gm.gl_account_id = ga.id
           WHERE gm.float_account_id = ${floatAccountId}
           AND gm.is_active = true
-          AND gm.mapping_type IN ('main', 'asset', 'liability')
+          AND gm.mapping_type = 'main'
         `;
       }
 
@@ -181,17 +182,55 @@ export class OptimizedFloatStatementService {
         sourceModuleFilter = sql`AND glt.source_module = ANY(${allowedModules})`;
       }
 
-      // Fetch GL entries
+      // First, let's debug raw GL journal entries before aggregation
+      const rawGLEntries = await sql`
+        SELECT 
+          glt.id as transaction_id,
+          glt.reference,
+          glt.source_transaction_type,
+          glje.debit,
+          glje.credit,
+          glje.account_id
+        FROM gl_transactions glt
+        JOIN gl_journal_entries glje ON glt.id = glje.transaction_id
+        WHERE glje.account_id = ANY(${glAccountIds})
+        AND glt.status = 'posted'
+        ${sourceModuleFilter}
+        ${glDateFilter}
+        ORDER BY glt.date DESC
+        LIMIT 5
+      `;
+
+      console.log(
+        "🔍 Raw GL journal entries (before aggregation):",
+        rawGLEntries
+      );
+
+      // Fetch GL entries - show ACTUAL debit/credit for this account
+      // Fix wrong entries: deposits should credit main account, withdrawals should debit
       const glEntries = await sql`
         SELECT 
-          glt.id,
+          glt.id || '-' || glje.id as id,
           glt.date as transaction_date,
           glt.source_module,
           glt.source_transaction_type,
           glt.reference,
           glt.description,
-          glje.debit,
-          glje.credit,
+          -- Fix reversed entries: deposit should be credit, withdrawal should be debit
+          CASE 
+            WHEN glt.source_transaction_type IN ('deposit', 'cash-in') AND glje.debit > 0 
+            THEN 0  -- Wrong: deposit with debit, flip to credit
+            WHEN glt.source_transaction_type IN ('withdrawal', 'cash-out') AND glje.credit > 0 
+            THEN glje.credit  -- Wrong: withdrawal with credit, flip to debit
+            ELSE glje.debit
+          END as debit,
+          CASE 
+            WHEN glt.source_transaction_type IN ('deposit', 'cash-in') AND glje.debit > 0 
+            THEN glje.debit  -- Wrong: deposit with debit, flip to credit
+            WHEN glt.source_transaction_type IN ('withdrawal', 'cash-out') AND glje.credit > 0 
+            THEN 0  -- Wrong: withdrawal with credit, flip to debit
+            ELSE glje.credit
+          END as credit,
           glt.created_by,
           u.first_name || ' ' || u.last_name as processed_by,
           'gl_entry' as entry_source,
@@ -201,12 +240,27 @@ export class OptimizedFloatStatementService {
         LEFT JOIN users u ON glt.created_by::uuid = u.id
         WHERE glje.account_id = ANY(${glAccountIds})
         AND glt.status = 'posted'
+        AND (glje.debit > 0 OR glje.credit > 0)
         ${sourceModuleFilter}
         ${glDateFilter}
         ORDER BY glt.date DESC, glt.created_at DESC
       `;
 
       devLog.info(`Found ${glEntries.length} GL entries`);
+
+      // Debug GL entries
+      if (glEntries.length > 0) {
+        console.log(
+          "Sample GL entries:",
+          glEntries.slice(0, 3).map((e) => ({
+            ref: e.reference,
+            type: e.source_transaction_type,
+            debit: e.debit,
+            credit: e.credit,
+            date: e.transaction_date,
+          }))
+        );
+      }
 
       // Debug: Check what's in float_transactions for this account
       console.log(
@@ -222,20 +276,8 @@ export class OptimizedFloatStatementService {
       `;
       console.log(`Float transactions in DB:`, debugCheck[0]);
 
-      // Check sample transaction data
-      const sampleTx = await sql`
-        SELECT transaction_type, type, status, created_at, description, amount
-        FROM float_transactions 
-        WHERE account_id = ${floatAccountId} OR float_account_id = ${floatAccountId}
-        ORDER BY created_at DESC
-        LIMIT 3
-      `;
-      console.log(`Sample transactions:`, sampleTx);
-
-      // Check date filter impact
-      console.log(`Date filter:`, { startDate, endDate });
-
       // Fetch float_transactions (handle both column name variations)
+      // EXCLUDE transactions that already have GL entries to avoid duplicates
       const floatTransactions = await sql`
         SELECT 
           ft.id,
@@ -245,14 +287,23 @@ export class OptimizedFloatStatementService {
           ft.description,
           ft.amount,
           CASE 
+            -- DEBIT: Money coming IN to the float (increases balance)
             WHEN COALESCE(ft.transaction_type, ft.type) = 'recharge' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'purchase' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'transfer_in' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'deposit' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'cash-in' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'pod_collection' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'commission_payment' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'adjustment' AND ft.amount > 0 THEN ft.amount
             ELSE 0
           END as debit,
           CASE 
+            -- CREDIT: Money going OUT of the float (decreases balance)
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'sale' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'power_sale' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'withdrawal' THEN ft.amount
+            WHEN COALESCE(ft.transaction_type, ft.type) = 'cash-out' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'transfer_out' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'settlement' THEN ft.amount
             WHEN COALESCE(ft.transaction_type, ft.type) = 'jumia_settlement' THEN ft.amount
@@ -272,6 +323,15 @@ export class OptimizedFloatStatementService {
         LEFT JOIN users u ON COALESCE(ft.processed_by::text, ft.created_by::text) = u.id::text
         WHERE (ft.float_account_id = ${floatAccountId} OR ft.account_id = ${floatAccountId})
         AND COALESCE(ft.status, 'completed') = 'completed'
+        AND NOT EXISTS (
+          -- Exclude only if this transaction has GL entries that affect THIS float account
+          -- This prevents duplicates while allowing transactions without GL entries
+          SELECT 1 FROM gl_transactions glt
+          JOIN gl_journal_entries glje ON glt.id = glje.transaction_id
+          WHERE glt.reference = ft.reference
+          AND glt.status = 'posted'
+          AND glje.account_id = ANY(${glAccountIds})
+        )
         ${floatDateFilter}
         ORDER BY ft.created_at DESC
       `;
@@ -280,7 +340,16 @@ export class OptimizedFloatStatementService {
         `Float transactions query returned: ${floatTransactions.length} rows`
       );
       if (floatTransactions.length > 0) {
-        console.log(`First transaction:`, floatTransactions[0]);
+        console.log(
+          `Sample float_transactions:`,
+          floatTransactions.slice(0, 5).map((ft) => ({
+            ref: ft.reference,
+            type: ft.source_transaction_type,
+            debit: ft.debit,
+            credit: ft.credit,
+            amount: ft.amount,
+          }))
+        );
       }
 
       devLog.info(`Found ${floatTransactions.length} float transactions`);
@@ -301,6 +370,25 @@ export class OptimizedFloatStatementService {
         `Total merged entries: ${allEntries.length} (${glEntries.length} GL + ${floatTransactions.length} Float)`
       );
 
+      // Debug: Show breakdown by transaction type
+      const depositCount = allEntries.filter(
+        (e) =>
+          e.source_transaction_type === "deposit" ||
+          e.source_transaction_type === "cash-in"
+      ).length;
+      const withdrawalCount = allEntries.filter(
+        (e) =>
+          e.source_transaction_type === "withdrawal" ||
+          e.source_transaction_type === "cash-out"
+      ).length;
+
+      console.log(`📊 Transaction breakdown:`, {
+        deposits: depositCount,
+        withdrawals: withdrawalCount,
+        fromGL: glEntries.length,
+        fromFloatTransactions: floatTransactions.length,
+      });
+
       // Apply pagination AFTER merging
       const totalCount = allEntries.length;
       const totalPages = Math.ceil(totalCount / pageSize);
@@ -314,7 +402,16 @@ export class OptimizedFloatStatementService {
         account.account_type === "cash-in-till" ||
         account.account_type === "bank" ||
         account.account_type === "cash" ||
-        account.account_type === "momo"; // MoMo is also an asset (cash equivalent)
+        account.account_type === "momo" || // MoMo is also an asset (cash equivalent)
+        account.account_type === "agency-banking" || // Agency banking is an asset (money we hold)
+        account.account_type === "power" || // Power float is inventory/asset
+        account.account_type === "e-zwich"; // E-Zwich is an asset
+
+      console.log(
+        `Account type: ${account.account_type}, Classified as: ${
+          isAsset ? "Asset" : "Liability"
+        }`
+      );
 
       // Calculate running balance
       const statementEntries: FloatStatementEntry[] = [];
@@ -330,7 +427,18 @@ export class OptimizedFloatStatementService {
         // For asset accounts: Debit increases, Credit decreases
         // For liability accounts: Credit increases, Debit decreases
         const netChange = isAsset ? debit - credit : credit - debit;
-        const balanceBefore = runningBalance - netChange;
+        const balanceBefore =
+          Math.round((runningBalance - netChange) * 100) / 100;
+
+        console.log(`Processing entry ${entry.reference}:`, {
+          debit,
+          credit,
+          isAsset,
+          netChange,
+          balanceBefore,
+          runningBalance,
+          accountType: account.account_type,
+        });
 
         statementEntries.unshift({
           id: entry.id,
@@ -343,9 +451,9 @@ export class OptimizedFloatStatementService {
             entry.description ||
             `${entry.source_module || entry.entry_source} transaction`,
           reference: entry.reference || "",
-          debit: debit,
-          credit: credit,
-          balance: runningBalance,
+          debit: Math.round(debit * 100) / 100,
+          credit: Math.round(credit * 100) / 100,
+          balance: Math.round(runningBalance * 100) / 100,
           source:
             entry.entry_source === "float_transaction"
               ? "float_transactions"
@@ -353,7 +461,7 @@ export class OptimizedFloatStatementService {
           processedBy: entry.processed_by || "System",
         });
 
-        runningBalance = balanceBefore;
+        runningBalance = Math.round(balanceBefore * 100) / 100;
       }
 
       // Calculate summary

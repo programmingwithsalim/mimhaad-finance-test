@@ -141,9 +141,9 @@ export async function POST(request: NextRequest) {
     // Default to e-zwich if not provided
     const finalInventoryType = inventory_type || "e-zwich";
 
-    console.log("📦 Received inventory_type:", inventory_type);
-    console.log("📦 Final inventory_type:", finalInventoryType);
-    console.log("📦 Partner bank ID:", partner_bank_id);
+    console.log("Received inventory_type:", inventory_type);
+    console.log("Final inventory_type:", finalInventoryType);
+    console.log("Partner bank ID:", partner_bank_id);
 
     // Get current user for role-based access
     const user = await getCurrentUser(request);

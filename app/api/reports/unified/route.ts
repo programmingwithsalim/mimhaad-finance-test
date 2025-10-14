@@ -176,11 +176,12 @@ export async function GET(request: NextRequest) {
       agencyFees + momoFees + ezwichFees + powerFees + jumiaFees;
 
     const totalCommissions = Number(commissionsResult[0].total) || 0;
-    // Revenue = Service fees ONLY (commissions are expenses, not revenue!)
-    const totalRevenue = totalServiceFees;
+    // Revenue = Service fees + Commissions (commissions are revenue!)
+    const totalFees = totalServiceFees;
+    const totalRevenue = totalFees + totalCommissions;
     const totalExpenses = Number(expensesResult[0].total) || 0;
-    // Net Income = Revenue - Commissions - Expenses
-    const netIncome = totalRevenue - totalCommissions - totalExpenses;
+    // Net Income = Total Revenue - Expenses
+    const netIncome = totalRevenue - totalExpenses;
     const cashPosition = Number(cashResult[0].total) || 0;
     const depreciation = Number(depreciationResult[0].period_depreciation) || 0;
 
@@ -346,9 +347,8 @@ export async function GET(request: NextRequest) {
       Math.abs(totalAssets - totalEquityAndLiabilities) < 0.01;
 
     // Gross profit and net profit
-    const grossProfit = totalRevenue - totalExpenses;
-    // Net Profit = Gross Profit - Commissions (commissions are deductions!)
-    const netProfit = grossProfit - totalCommissions;
+    // Net Profit = Total Revenue - Expenses (commissions are part of revenue)
+    const netProfit = totalRevenue - totalExpenses;
 
     devLog.info("Balance Sheet Summary:", {
       totalAssets: `GHS ${totalAssets.toFixed(2)}`,
@@ -360,7 +360,10 @@ export async function GET(request: NextRequest) {
     });
 
     devLog.info("Profit & Loss Summary:", {
-      grossProfit: `GHS ${grossProfit.toFixed(2)}`,
+      totalFees: `GHS ${totalFees.toFixed(2)}`,
+      totalCommissions: `GHS ${totalCommissions.toFixed(2)}`,
+      totalRevenue: `GHS ${totalRevenue.toFixed(2)}`,
+      totalExpenses: `GHS ${totalExpenses.toFixed(2)}`,
       netProfit: `GHS ${netProfit.toFixed(2)}`,
       profitMargin: `${((netProfit / (totalRevenue || 1)) * 100).toFixed(2)}%`,
     });
@@ -370,9 +373,9 @@ export async function GET(request: NextRequest) {
       data: {
         // Summary
         summary: {
-          totalRevenue,
           totalFees: totalServiceFees,
           totalCommissions,
+          totalRevenue,
           totalExpenses,
           netIncome,
           cashPosition,
@@ -438,25 +441,25 @@ export async function GET(request: NextRequest) {
         // Profit & Loss
         profitLoss: {
           period: { from, to },
-          revenue: {
+          fees: {
             breakdown: revenueBreakdown,
-            total: totalRevenue,
+            total: totalFees,
           },
-          expenses: {
-            breakdown: expensesBreakdown,
-            total: totalExpenses,
-          },
-          grossProfit,
           commissions: {
             note: 21,
             total: totalCommissions,
           },
+          totalRevenue,
+          expenses: {
+            breakdown: expensesBreakdown,
+            total: totalExpenses,
+          },
           netProfit,
           summary: {
+            totalFees,
+            totalCommissions,
             totalRevenue,
             totalExpenses,
-            grossProfit,
-            totalCommissions,
             netProfit,
             profitMargin:
               totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0,
@@ -518,16 +521,12 @@ export async function GET(request: NextRequest) {
             netCashFromInvesting: 0,
           },
           financingActivities: {
-            dividendsPaid: -totalCommissions,
-            netCashFromFinancing: -totalCommissions,
+            dividendsPaid: 0,
+            netCashFromFinancing: 0,
           },
           summary: {
             netChangeInCash:
-              netIncome +
-              depreciation +
-              accountsPayable -
-              accountsReceivable -
-              totalCommissions,
+              netIncome + depreciation + accountsPayable - accountsReceivable,
             endingCashBalance: cashPosition,
           },
         },

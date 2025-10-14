@@ -182,8 +182,8 @@ export async function GET(request: Request) {
     `;
     const totalCommissions =
       Number(commissionsResult[0].total_commissions) || 0;
-    // Revenue = Service fees ONLY (commissions are expenses, not revenue!)
-    const totalRevenue = totalFees;
+    // Revenue = Service fees + Commissions (commissions are revenue!)
+    const totalRevenue = totalFees + totalCommissions;
 
     // Total Expenses (Approved expenses only)
     const expensesResult = await sql`
@@ -197,8 +197,8 @@ export async function GET(request: Request) {
     `;
     const totalExpenses = Number(expensesResult[0].total_expenses) || 0;
 
-    // Profit for the Year = Revenue - Commissions - Expenses
-    const profitForTheYear = totalRevenue - totalCommissions - totalExpenses;
+    // Profit for the Year = Total Revenue - Expenses
+    const profitForTheYear = totalRevenue - totalExpenses;
     const totalEquity =
       shareCapital + retainedEarnings + otherFund + profitForTheYear;
 

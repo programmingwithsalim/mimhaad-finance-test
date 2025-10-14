@@ -696,10 +696,9 @@ export class UnifiedGLPostingService {
     switch (data.transactionType) {
       case "initial_balance":
       case "recharge":
-      case "withdrawal":
       case "balance_adjustment":
       case "transfer":
-        // Handle float operations with custom entries
+        // Handle float operations with custom entries (EXCLUDING withdrawal)
         if (
           data.metadata?.customEntries &&
           Array.isArray(data.metadata.customEntries)
@@ -758,13 +757,15 @@ export class UnifiedGLPostingService {
         break;
 
       case "cash-in":
-        // MoMo Cash-In: Debit cash account, credit liability account
-        if (accounts.main && accounts.liability) {
+        // MoMo Cash-In: Customer gives cash, we send MoMo
+        // Main account (MoMo float) DECREASES = CREDIT
+        // Cash-in-till INCREASES = DEBIT (handled separately)
+        if (accounts.main) {
           entries.push({
             accountId: accounts.main,
             accountCode: accounts.mainCode,
-            debit: data.amount,
-            credit: 0,
+            debit: 0,
+            credit: data.amount,
             description: `MoMo Cash-In - ${data.reference}`,
             metadata: {
               transactionId: data.transactionId,
@@ -774,43 +775,14 @@ export class UnifiedGLPostingService {
             },
           });
 
-          entries.push({
-            accountId: accounts.liability,
-            accountCode: accounts.liabilityCode,
-            debit: 0,
-            credit: data.amount,
-            description: `MoMo Cash-In Liability - ${data.reference}`,
-            metadata: {
-              transactionId: data.transactionId,
-              sourceModule: data.sourceModule,
-              transactionType: data.transactionType,
-              customerName: data.customerName,
-            },
-          });
-
-          // Add fee entry if fee exists - fees always go to cash-in till
-          if (data.fee > 0 && accounts.fee) {
+          // If liability account exists, debit it (for double-entry)
+          if (accounts.liability) {
             entries.push({
-              accountId: accounts.fee,
-              accountCode: accounts.feeCode,
-              debit: 0,
-              credit: data.fee,
-              description: `Fee Revenue - ${data.reference}`,
-              metadata: {
-                transactionId: data.transactionId,
-                sourceModule: data.sourceModule,
-                transactionType: data.transactionType,
-                customerName: data.customerName,
-              },
-            });
-
-            // Fee debit always goes to cash-in till (main account)
-            entries.push({
-              accountId: accounts.main,
-              accountCode: accounts.mainCode,
-              debit: data.fee,
+              accountId: accounts.liability,
+              accountCode: accounts.liabilityCode,
+              debit: data.amount,
               credit: 0,
-              description: `Fee to Cash-in Till - ${data.reference}`,
+              description: `MoMo Cash-In Liability - ${data.reference}`,
               metadata: {
                 transactionId: data.transactionId,
                 sourceModule: data.sourceModule,
@@ -819,31 +791,21 @@ export class UnifiedGLPostingService {
               },
             });
           }
+
+          // Fee is handled via cash-in-till GL entries separately
         }
         break;
 
       case "cash-out":
-        // MoMo Cash-Out: Debit liability account, credit cash account
-        if (accounts.main && accounts.asset) {
+        // MoMo Cash-Out: Customer gives MoMo, we give cash
+        // Main account (MoMo float) INCREASES = DEBIT
+        // Cash-in-till DECREASES = CREDIT (handled separately)
+        if (accounts.main) {
           entries.push({
             accountId: accounts.main,
             accountCode: accounts.mainCode,
             debit: data.amount,
             credit: 0,
-            description: `MoMo Cash-Out Liability - ${data.reference}`,
-            metadata: {
-              transactionId: data.transactionId,
-              sourceModule: data.sourceModule,
-              transactionType: data.transactionType,
-              customerName: data.customerName,
-            },
-          });
-
-          entries.push({
-            accountId: accounts.asset,
-            accountCode: accounts.assetCode,
-            debit: 0,
-            credit: data.amount,
             description: `MoMo Cash-Out - ${data.reference}`,
             metadata: {
               transactionId: data.transactionId,
@@ -853,29 +815,14 @@ export class UnifiedGLPostingService {
             },
           });
 
-          // Add fee entry if fee exists - fees always go to cash-in till
-          if (data.fee > 0 && accounts.fee) {
+          // If liability account exists, credit it (for double-entry)
+          if (accounts.liability) {
             entries.push({
-              accountId: accounts.fee,
-              accountCode: accounts.feeCode,
+              accountId: accounts.liability,
+              accountCode: accounts.liabilityCode,
               debit: 0,
-              credit: data.fee,
-              description: `Fee Revenue - ${data.reference}`,
-              metadata: {
-                transactionId: data.transactionId,
-                sourceModule: data.sourceModule,
-                transactionType: data.transactionType,
-                customerName: data.customerName,
-              },
-            });
-
-            // Fee debit always goes to cash-in till (main account)
-            entries.push({
-              accountId: accounts.main,
-              accountCode: accounts.mainCode,
-              debit: data.fee,
-              credit: 0,
-              description: `Fee to Cash-in Till - ${data.reference}`,
+              credit: data.amount,
+              description: `MoMo Cash-Out Liability - ${data.reference}`,
               metadata: {
                 transactionId: data.transactionId,
                 sourceModule: data.sourceModule,
@@ -888,13 +835,15 @@ export class UnifiedGLPostingService {
         break;
 
       case "deposit":
-        // Debit main account, credit revenue
-        if (accounts.main && accounts.revenue) {
+        // Agency/MoMo Deposit: Customer gives cash, we send MoMo
+        // Main account (MoMo float) DECREASES = CREDIT
+        // Cash-in-till INCREASES = DEBIT (handled separately)
+        if (accounts.main) {
           entries.push({
             accountId: accounts.main,
             accountCode: accounts.mainCode,
-            debit: data.amount,
-            credit: 0,
+            debit: 0,
+            credit: data.amount,
             description: `Deposit - ${data.reference}`,
             metadata: {
               transactionId: data.transactionId,
@@ -904,43 +853,14 @@ export class UnifiedGLPostingService {
             },
           });
 
-          entries.push({
-            accountId: accounts.revenue,
-            accountCode: accounts.revenueCode,
-            debit: 0,
-            credit: data.amount,
-            description: `Deposit Revenue - ${data.reference}`,
-            metadata: {
-              transactionId: data.transactionId,
-              sourceModule: data.sourceModule,
-              transactionType: data.transactionType,
-              customerName: data.customerName,
-            },
-          });
-
-          // Add fee entry if fee exists - fees always go to cash-in till
-          if (data.fee > 0 && accounts.fee) {
+          // If liability account exists, debit it (for double-entry)
+          if (accounts.liability) {
             entries.push({
-              accountId: accounts.fee,
-              accountCode: accounts.feeCode,
-              debit: 0,
-              credit: data.fee,
-              description: `Fee Revenue - ${data.reference}`,
-              metadata: {
-                transactionId: data.transactionId,
-                sourceModule: data.sourceModule,
-                transactionType: data.transactionType,
-                customerName: data.customerName,
-              },
-            });
-
-            // Fee debit always goes to cash-in till (main account)
-            entries.push({
-              accountId: accounts.main,
-              accountCode: accounts.mainCode,
-              debit: data.fee,
+              accountId: accounts.liability,
+              accountCode: accounts.liabilityCode,
+              debit: data.amount,
               credit: 0,
-              description: `Fee to Cash-in Till - ${data.reference}`,
+              description: `Deposit Liability - ${data.reference}`,
               metadata: {
                 transactionId: data.transactionId,
                 sourceModule: data.sourceModule,
@@ -949,31 +869,21 @@ export class UnifiedGLPostingService {
               },
             });
           }
+
+          // Fee is handled via cash-in-till GL entries separately
         }
         break;
 
       case "withdrawal":
-        // Debit revenue, credit main account (for MoMo withdrawals)
-        if (accounts.revenue && accounts.main) {
-          entries.push({
-            accountId: accounts.revenue,
-            accountCode: accounts.revenueCode,
-            debit: data.amount,
-            credit: 0,
-            description: `Withdrawal Revenue - ${data.reference}`,
-            metadata: {
-              transactionId: data.transactionId,
-              sourceModule: data.sourceModule,
-              transactionType: data.transactionType,
-              customerName: data.customerName,
-            },
-          });
-
+        // MoMo/Agency Withdrawal: Customer gives MoMo, we give cash
+        // Main account (MoMo float) INCREASES = DEBIT
+        // Cash-in-till DECREASES = CREDIT (handled separately)
+        if (accounts.main) {
           entries.push({
             accountId: accounts.main,
             accountCode: accounts.mainCode,
-            debit: 0,
-            credit: data.amount,
+            debit: data.amount,
+            credit: 0,
             description: `Withdrawal - ${data.reference}`,
             metadata: {
               transactionId: data.transactionId,
@@ -983,14 +893,31 @@ export class UnifiedGLPostingService {
             },
           });
 
-          // Add fee entry if fee exists
+          // If liability account exists, credit it (for double-entry)
+          if (accounts.liability) {
+            entries.push({
+              accountId: accounts.liability,
+              accountCode: accounts.liabilityCode,
+              debit: 0,
+              credit: data.amount,
+              description: `Withdrawal Liability - ${data.reference}`,
+              metadata: {
+                transactionId: data.transactionId,
+                sourceModule: data.sourceModule,
+                transactionType: data.transactionType,
+                customerName: data.customerName,
+              },
+            });
+          }
+
+          // Add fee entry if fee exists (fee increases float)
           if (data.fee > 0 && accounts.fee) {
             entries.push({
-              accountId: accounts.fee,
-              accountCode: accounts.feeCode,
-              debit: 0,
-              credit: data.fee,
-              description: `Fee Revenue - ${data.reference}`,
+              accountId: accounts.main,
+              accountCode: accounts.mainCode,
+              debit: data.fee,
+              credit: 0,
+              description: `Fee - ${data.reference}`,
               metadata: {
                 transactionId: data.transactionId,
                 sourceModule: data.sourceModule,
@@ -999,13 +926,12 @@ export class UnifiedGLPostingService {
               },
             });
 
-            // Add corresponding debit entry for fee
             entries.push({
-              accountId: accounts.main,
-              accountCode: accounts.mainCode,
-              debit: data.fee,
-              credit: 0,
-              description: `Fee Debit - ${data.reference}`,
+              accountId: accounts.fee,
+              accountCode: accounts.feeCode,
+              debit: 0,
+              credit: data.fee,
+              description: `Fee Revenue - ${data.reference}`,
               metadata: {
                 transactionId: data.transactionId,
                 sourceModule: data.sourceModule,
@@ -1051,13 +977,14 @@ export class UnifiedGLPostingService {
         break;
 
       case "sale":
-        // Power Sale: Debit main account (cash), credit revenue
+        // Power Sale: Credit power float (inventory out), debit revenue/cash
+        // Power goes OUT of float, so CREDIT the float account
         if (accounts.main && accounts.revenue) {
           entries.push({
             accountId: accounts.main,
             accountCode: accounts.mainCode,
-            debit: data.amount,
-            credit: 0,
+            debit: 0,
+            credit: data.amount,
             description: `Power Sale - ${data.reference}`,
             metadata: {
               transactionId: data.transactionId,
@@ -1070,8 +997,8 @@ export class UnifiedGLPostingService {
           entries.push({
             accountId: accounts.revenue,
             accountCode: accounts.revenueCode,
-            debit: 0,
-            credit: data.amount,
+            debit: data.amount,
+            credit: 0,
             description: `Power Sale Revenue - ${data.reference}`,
             metadata: {
               transactionId: data.transactionId,
@@ -1081,37 +1008,8 @@ export class UnifiedGLPostingService {
             },
           });
 
-          // Add fee entry if fee exists
-          if (data.fee > 0 && accounts.fee) {
-            entries.push({
-              accountId: accounts.fee,
-              accountCode: accounts.feeCode,
-              debit: 0,
-              credit: data.fee,
-              description: `Fee Revenue - ${data.reference}`,
-              metadata: {
-                transactionId: data.transactionId,
-                sourceModule: data.sourceModule,
-                transactionType: data.transactionType,
-                customerName: data.customerName,
-              },
-            });
-
-            // Add corresponding debit entry for fee
-            entries.push({
-              accountId: accounts.main,
-              accountCode: accounts.mainCode,
-              debit: data.fee,
-              credit: 0,
-              description: `Fee Debit - ${data.reference}`,
-              metadata: {
-                transactionId: data.transactionId,
-                sourceModule: data.sourceModule,
-                transactionType: data.transactionType,
-                customerName: data.customerName,
-              },
-            });
-          }
+          // Fee is handled separately via cash-in-till GL entries
+          // Don't post fee to power float account - it's handled in the main transaction flow
         }
         break;
 

@@ -501,8 +501,7 @@ export default function InventoryPage() {
                             "E-Zwich Cards"}
                           {batch.inventory_type === "sim" && "SIM Cards"}
                           {batch.inventory_type === "rollers" &&
-                            "Paper Rollers"}
-                          {batch.inventory_type === "other" && "Other"}
+                            "Roller Banners"}
                           {!batch.inventory_type && "E-Zwich Cards"}
                         </Badge>
                       </TableCell>

@@ -237,23 +237,36 @@ export async function GET(request: Request) {
       Number(commissionsResult[0].total_commissions) || 0;
 
     // Calculate profit/loss
-    // Gross Profit = Revenue - Expenses
-    // Net Profit = Gross Profit - Commissions (commissions are deductions, not income!)
-    const grossProfit = totalRevenue - totalExpenses;
-    const netProfit = grossProfit - totalCommissions;
+    // Total Fees = Service Fees only
+    // Total Revenue = Total Fees + Commissions (commissions are revenue!)
+    // Net Profit = Total Revenue - Expenses
+    const totalFees = totalRevenue; // This is fees only
+    const totalRevenueIncludingCommissions = totalFees + totalCommissions;
+    const netProfit = totalRevenueIncludingCommissions - totalExpenses;
     const profitMargin =
-      totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+      totalRevenueIncludingCommissions > 0
+        ? (netProfit / totalRevenueIncludingCommissions) * 100
+        : 0;
 
     return NextResponse.json({
       success: true,
       data: {
         period: { from, to },
 
-        // REVENUE (Fees only)
-        revenue: {
+        // FEES (Service Fees only)
+        fees: {
           breakdown: revenueBreakdown,
-          total: totalRevenue,
+          total: totalFees,
         },
+
+        // COMMISSIONS (Revenue)
+        commissions: {
+          note: 21,
+          total: totalCommissions,
+        },
+
+        // Total Revenue (Fees + Commissions)
+        totalRevenue: totalRevenueIncludingCommissions,
 
         // EXPENSES (By category)
         expenses: {
@@ -261,24 +274,15 @@ export async function GET(request: Request) {
           total: totalExpenses,
         },
 
-        // Gross Profit/Loss
-        grossProfit,
-
-        // COMMISSIONS
-        commissions: {
-          note: 21,
-          total: totalCommissions,
-        },
-
         // Net Profit/Loss
         netProfit,
 
         // Summary
         summary: {
-          totalRevenue,
-          totalExpenses,
-          grossProfit,
+          totalFees,
           totalCommissions,
+          totalRevenue: totalRevenueIncludingCommissions,
+          totalExpenses,
           netProfit,
           profitMargin,
         },

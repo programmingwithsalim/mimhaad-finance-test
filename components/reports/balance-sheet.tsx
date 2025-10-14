@@ -385,10 +385,10 @@ export function BalanceSheet({ date, branch }: BalanceSheetProps) {
                       )}
                     </TableCell>
                   </TableRow>
-                  <TableRow className="font-medium">
-                    <TableCell>Total Equities</TableCell>
+                  <TableRow className="font-bold text-base bg-blue-50">
+                    <TableCell>Shareholder Fund</TableCell>
                     <TableCell></TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right text-blue-700">
                       {formatCurrency(
                         balanceSheetData.equity.shareholdersFund.total
                       )}

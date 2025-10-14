@@ -44,6 +44,8 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useServiceStatistics } from "@/hooks/use-service-statistics";
 import { DynamicFloatDisplay } from "@/components/shared/dynamic-float-display";
 import EnhancedCardIssuanceForm from "@/components/e-zwich/enhanced-card-issuance-form";
+import { EZwichCardIssuance } from "@/components/inventory/e-zwich-card-issuance";
+import { InventoryHistory } from "@/components/inventory/inventory-history";
 import { TransactionEditDialog } from "@/components/shared/transaction-edit-dialog";
 import { TransactionDeleteDialog } from "@/components/shared/transaction-delete-dialog";
 import {
@@ -864,9 +866,10 @@ export default function EZwichPage() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="withdrawal">Withdrawal</TabsTrigger>
           <TabsTrigger value="card-issuance">Card Issuance</TabsTrigger>
+          <TabsTrigger value="other-inventory">Other Inventory</TabsTrigger>
           <TabsTrigger value="history">Transaction History</TabsTrigger>
           <TabsTrigger value="settlement">Settlement</TabsTrigger>
         </TabsList>
@@ -897,17 +900,20 @@ export default function EZwichPage() {
                           onChange={(e) => {
                             // Allow digits and hyphen
                             let value = e.target.value.replace(/[^\d-]/g, "");
-                            
+
                             // Remove any existing hyphens first
                             const digitsOnly = value.replace(/-/g, "");
-                            
+
                             // Auto-format: Add hyphen after 9th digit (format: 201436783-7)
                             if (digitsOnly.length > 9) {
-                              value = digitsOnly.slice(0, 9) + "-" + digitsOnly.slice(9, 10);
+                              value =
+                                digitsOnly.slice(0, 9) +
+                                "-" +
+                                digitsOnly.slice(9, 10);
                             } else {
                               value = digitsOnly;
                             }
-                            
+
                             setWithdrawalForm({
                               ...withdrawalForm,
                               card_number: value,
@@ -1123,6 +1129,16 @@ export default function EZwichPage() {
                 isLoading={loadingFloats}
               />
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="other-inventory" className="space-y-6">
+          <div className="space-y-6">
+            {/* Other Inventory Issuance Form */}
+            <EZwichCardIssuance />
+
+            {/* Inventory History */}
+            <InventoryHistory />
           </div>
         </TabsContent>
 
