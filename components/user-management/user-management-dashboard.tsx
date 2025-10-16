@@ -65,6 +65,7 @@ import { UserForm } from "./user-form";
 import { UserDetailView } from "./user-detail-view";
 import { useBranches } from "@/hooks/use-branches";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Label } from "@/components/ui/label";
 
 interface User {
   id: string;
@@ -113,6 +114,8 @@ export function UserManagementDashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [userToChangeRole, setUserToChangeRole] = useState<User | null>(null);
+  const [newRole, setNewRole] = useState<string>("");
 
   const {
     branches,
@@ -263,6 +266,49 @@ export function UserManagementDashboard() {
         title: "Error",
         description:
           error instanceof Error ? error.message : "Failed to reset password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleChangeRoleClick = (user: User) => {
+    setUserToChangeRole(user);
+    setNewRole(user.role);
+  };
+
+  const handleChangeRole = async () => {
+    if (!userToChangeRole || !newRole) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(`/api/users/${userToChangeRole.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update role");
+      }
+
+      toast({
+        title: "Success",
+        description: `User role changed to ${newRole} successfully`,
+      });
+
+      // Refresh the list
+      await fetchUsers();
+      setUserToChangeRole(null);
+      setNewRole("");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to change role",
         variant: "destructive",
       });
     } finally {
@@ -750,6 +796,13 @@ export function UserManagementDashboard() {
                               <KeyRound className="h-4 w-4 mr-2" />
                               Reset Password
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleChangeRoleClick(user)}
+                              disabled={isSubmitting}
+                            >
+                              <Users className="h-4 w-4 mr-2" />
+                              Change Role
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handleDeleteClick(user)}
@@ -798,6 +851,53 @@ export function UserManagementDashboard() {
               className="bg-red-600 hover:bg-red-700"
             >
               {isSubmitting ? "Deleting..." : "Delete User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Change Role Dialog */}
+      <AlertDialog
+        open={!!userToChangeRole}
+        onOpenChange={(open) => !open && setUserToChangeRole(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Change User Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              Change the role for{" "}
+              <strong>
+                {userToChangeRole?.firstName} {userToChangeRole?.lastName}
+              </strong>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="role-select" className="mb-2 block">
+              New Role
+            </Label>
+            <Select value={newRole} onValueChange={setNewRole}>
+              <SelectTrigger id="role-select">
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Admin">Admin</SelectItem>
+                <SelectItem value="Manager">Manager</SelectItem>
+                <SelectItem value="Finance">Finance</SelectItem>
+                <SelectItem value="Operations">Operations</SelectItem>
+                <SelectItem value="Supervisor">Supervisor</SelectItem>
+                <SelectItem value="Cashier">Cashier</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setUserToChangeRole(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleChangeRole}
+              disabled={isSubmitting || !newRole}
+            >
+              {isSubmitting ? "Changing..." : "Change Role"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

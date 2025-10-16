@@ -64,6 +64,36 @@ interface EquityTransaction {
 
 export default function EquityPage() {
   const { user } = useCurrentUser();
+
+  // Admin-only access control
+  if (!user) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-center">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (user.role !== "Admin") {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center space-y-4">
+              <h2 className="text-2xl font-bold text-red-600">Access Denied</h2>
+              <p className="text-muted-foreground">
+                Only Administrators can access the Shareholders Fund page.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState<EquityTransaction[]>([]);

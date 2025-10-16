@@ -181,7 +181,9 @@ export function TransactionReceipt({
           <div className="space-y-2 text-sm">
             <div className="flex justify-between py-1">
               <span className="font-medium">Transaction ID:</span>
-              <span className="font-mono">{data.transactionId}</span>
+              <span className="font-mono text-xs">
+                {data.transactionId.slice(-12)}
+              </span>
             </div>
 
             <div className="flex justify-between py-1">

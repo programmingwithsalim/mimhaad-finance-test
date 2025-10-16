@@ -236,7 +236,8 @@ export function TransactionsTable({
       date: transaction.created_at,
       additionalData: {
         provider: transaction.provider,
-        processedBy: transaction.processed_by,
+        processedBy:
+          transaction.processed_by_name || transaction.processed_by || "System",
         status: transaction.status,
       },
     };

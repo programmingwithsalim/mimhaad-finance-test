@@ -38,7 +38,8 @@ const formSchema = z.object({
   cardNumber: z
     .string()
     .min(1, "Card number is required")
-    .max(10, "Card number cannot exceed 10 digits")
+    .min(10, "Card number must be at least 10 digits")
+    .max(20, "Card number cannot exceed 20 digits")
     .regex(/^\d+$/, "Card number must contain only digits"),
   settlementAccount: z.string().min(1, "Settlement account is required"),
   customerName: z
@@ -315,12 +316,12 @@ export function WithdrawalForm({ onSuccess, onCancel }: WithdrawalFormProps) {
                       <Input
                         placeholder="Enter card number"
                         {...field}
-                        maxLength={10}
+                        maxLength={20}
                         className="font-mono"
                         onChange={(e) => {
                           const value = e.target.value
                             .replace(/\D/g, "")
-                            .slice(0, 10);
+                            .slice(0, 20);
                           field.onChange(value);
                         }}
                       />

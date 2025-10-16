@@ -99,9 +99,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 mt.id, mt.type, mt.amount, mt.fee, mt.customer_name, mt.phone_number, 
                 mt.provider, mt.status, mt.created_at as date, mt.branch_id, mt.user_id, mt.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM momo_transactions mt
               LEFT JOIN branches b ON mt.branch_id = b.id
+              LEFT JOIN users u ON mt.user_id::uuid = u.id
               WHERE mt.branch_id::text = ${effectiveBranchId}
               ORDER BY mt.created_at DESC 
               LIMIT ${limit}
@@ -115,9 +117,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 mt.id, mt.type, mt.amount, mt.fee, mt.customer_name, mt.phone_number, 
                 mt.provider, mt.status, mt.created_at as date, mt.branch_id, mt.user_id, mt.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM momo_transactions mt
               LEFT JOIN branches b ON mt.branch_id = b.id
+              LEFT JOIN users u ON mt.user_id::uuid = u.id
               ORDER BY mt.created_at DESC 
               LIMIT ${limit}
             `;
@@ -147,9 +151,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 abt.id, abt.type, abt.amount, abt.fee, abt.customer_name, abt.account_number as phone_number, 
                 abt.partner_bank as provider, abt.status, abt.date, abt.branch_id, abt.user_id, abt.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM agency_banking_transactions abt
               LEFT JOIN branches b ON abt.branch_id = b.id
+              LEFT JOIN users u ON abt.user_id::uuid = u.id
               WHERE abt.branch_id::text = ${effectiveBranchId}
               ORDER BY abt.date DESC 
               LIMIT ${limit}
@@ -163,9 +169,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 abt.id, abt.type, abt.amount, abt.fee, abt.customer_name, abt.account_number as phone_number, 
                 abt.partner_bank as provider, abt.status, abt.date, abt.branch_id, abt.user_id, abt.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM agency_banking_transactions abt
               LEFT JOIN branches b ON abt.branch_id = b.id
+              LEFT JOIN users u ON abt.user_id::uuid = u.id
               ORDER BY abt.date DESC 
               LIMIT ${limit}
             `;
@@ -216,9 +224,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 ew.id, 'withdrawal' as type, ew.amount, ew.fee, ew.customer_name, ew.customer_phone as phone_number, 
                 ew.partner_bank as provider, ew.status, ew.created_at as date, ew.branch_id, ew.user_id, ew.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM e_zwich_withdrawals ew
               LEFT JOIN branches b ON ew.branch_id = b.id
+              LEFT JOIN users u ON ew.user_id::uuid = u.id
               WHERE ew.branch_id::text = ${effectiveBranchId}
               ORDER BY ew.created_at DESC
             `;
@@ -227,9 +237,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 ew.id, 'withdrawal' as type, ew.amount, ew.fee, ew.customer_name, ew.customer_phone as phone_number, 
                 ew.partner_bank as provider, ew.status, ew.created_at as date, ew.branch_id, ew.user_id, ew.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM e_zwich_withdrawals ew
               LEFT JOIN branches b ON ew.branch_id = b.id
+              LEFT JOIN users u ON ew.user_id::uuid = u.id
               ORDER BY ew.created_at DESC
             `;
           }
@@ -241,9 +253,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 eci.id, 'card_issuance' as type, eci.fee_charged as amount, eci.fee_charged as fee, eci.customer_name, eci.customer_phone as phone_number, 
                 eci.partner_bank as provider, eci.status, eci.created_at as date, eci.branch_id, eci.issued_by as user_id, eci.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM e_zwich_card_issuances eci
               LEFT JOIN branches b ON eci.branch_id = b.id
+              LEFT JOIN users u ON eci.issued_by::uuid = u.id
               WHERE eci.branch_id::text = ${effectiveBranchId}
               ORDER BY eci.created_at DESC
             `;
@@ -252,9 +266,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 eci.id, 'card_issuance' as type, eci.fee_charged as amount, eci.fee_charged as fee, eci.customer_name, eci.customer_phone as phone_number, 
                 eci.partner_bank as provider, eci.status, eci.created_at as date, eci.branch_id, eci.issued_by as user_id, eci.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM e_zwich_card_issuances eci
               LEFT JOIN branches b ON eci.branch_id = b.id
+              LEFT JOIN users u ON eci.issued_by::uuid = u.id
               ORDER BY eci.created_at DESC
             `;
           }
@@ -292,9 +308,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 pt.id, pt.type, pt.amount, pt.commission as fee, pt.customer_name, pt.customer_phone as phone_number, 
                 pt.provider, pt.status, pt.created_at as date, pt.branch_id, pt.user_id, pt.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM power_transactions pt
               LEFT JOIN branches b ON pt.branch_id = b.id
+              LEFT JOIN users u ON pt.user_id::uuid = u.id
               WHERE pt.branch_id::text = ${effectiveBranchId}
               ORDER BY pt.created_at DESC 
               LIMIT ${limit}
@@ -308,9 +326,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 pt.id, pt.type, pt.amount, pt.commission as fee, pt.customer_name, pt.customer_phone as phone_number, 
                 pt.provider, pt.status, pt.created_at as date, pt.branch_id, pt.user_id, pt.reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM power_transactions pt
               LEFT JOIN branches b ON pt.branch_id = b.id
+              LEFT JOIN users u ON pt.user_id::uuid = u.id
               ORDER BY pt.created_at DESC 
               LIMIT ${limit}
             `;
@@ -340,9 +360,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 jt.id, jt.transaction_type as type, jt.amount, jt.fee, jt.customer_name, jt.customer_phone as phone_number, 
                 'Jumia' as provider, jt.status, jt.created_at as date, jt.branch_id, jt.user_id, jt.transaction_id as reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM jumia_transactions jt
               LEFT JOIN branches b ON jt.branch_id = b.id
+              LEFT JOIN users u ON jt.user_id::uuid = u.id
               WHERE jt.branch_id::text = ${effectiveBranchId}
               ORDER BY jt.created_at DESC 
               LIMIT ${limit}
@@ -356,9 +378,11 @@ export async function GET(request: NextRequest) {
               SELECT 
                 jt.id, jt.transaction_type as type, jt.amount, jt.fee, jt.customer_name, jt.customer_phone as phone_number, 
                 'Jumia' as provider, jt.status, jt.created_at as date, jt.branch_id, jt.user_id, jt.transaction_id as reference,
-                b.name as branch_name
+                b.name as branch_name,
+                u.first_name || ' ' || u.last_name as processed_by_name
               FROM jumia_transactions jt
               LEFT JOIN branches b ON jt.branch_id = b.id
+              LEFT JOIN users u ON jt.user_id::uuid = u.id
               ORDER BY jt.created_at DESC 
               LIMIT ${limit}
             `;
@@ -416,6 +440,7 @@ export async function GET(request: NextRequest) {
       branch_id: tx.branch_id,
       branch_name: tx.branch_name,
       processed_by: tx.user_id,
+      processed_by_name: tx.processed_by_name || "System",
       service_type: tx.source_module,
     }));
 

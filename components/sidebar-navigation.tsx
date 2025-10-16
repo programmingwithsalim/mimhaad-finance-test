@@ -133,7 +133,7 @@ const menuItems = [
         title: "Shareholders Fund",
         href: "/dashboard/equity",
         icon: DollarSign,
-        roles: ["Admin", "Finance", "Manager"], // Shareholders fund management
+        roles: ["Admin"], // Shareholders fund management - Admin only
       },
     ],
   },

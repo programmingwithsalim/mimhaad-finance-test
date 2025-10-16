@@ -575,10 +575,10 @@ export default function ReportsPage() {
     page.drawText(
       `GHS ${getValue(data.assets.current.closingInventory).toLocaleString()}`,
       {
-      x: 400,
-      y,
-      size: 10,
-      font: font,
+        x: 400,
+        y,
+        size: 10,
+        font: font,
       }
     );
     y -= 20;
@@ -602,10 +602,10 @@ export default function ReportsPage() {
         data.assets.nonCurrent?.fixedAssetsNet
       ).toLocaleString()}`,
       {
-      x: 400,
-      y,
-      size: 10,
-      font: font,
+        x: 400,
+        y,
+        size: 10,
+        font: font,
       }
     );
     y -= 25;
@@ -619,10 +619,10 @@ export default function ReportsPage() {
     page.drawText(
       `GHS ${data.assets.totalAssets?.toLocaleString() || "0.00"}`,
       {
-      x: 400,
-      y,
-      size: 12,
-      font: boldFont,
+        x: 400,
+        y,
+        size: 12,
+        font: boldFont,
       }
     );
 
@@ -1509,21 +1509,57 @@ export default function ReportsPage() {
                     {/* Balance Check */}
                     <div className="space-y-4">
                       <div
-                        className={`flex justify-between items-center py-6 border-t-2 border-b-2 font-bold text-xl px-4 rounded-lg ${
+                        className={`py-6 border-t-2 border-b-2 font-bold text-lg px-4 rounded-lg ${
                           reportData.balanceSheet.summary.balanceCheck
                             ? "border-green-200 bg-green-50 text-green-600"
                             : "border-red-200 bg-red-50 text-red-600"
                         }`}
                       >
-                        <span>Total Assets = Liabilities + Equity</span>
-                        <span>
-                          GHS{" "}
-                          {reportData.balanceSheet.assets.totalAssets?.toLocaleString() ||
-                            "0.00"}
-                          {reportData.balanceSheet.summary?.balanceCheck
-                            ? " ✓"
-                            : " ✗"}
-                        </span>
+                        <div className="flex justify-between items-center">
+                          <span>Total Assets</span>
+                          <span>
+                            GHS{" "}
+                            {reportData.balanceSheet.assets.totalAssets?.toLocaleString() ||
+                              "0.00"}
+                          </span>
+                        </div>
+                        <div className="text-center my-2 text-sm font-semibold">
+                          =
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span>Total Liabilities</span>
+                          <span>
+                            GHS{" "}
+                            {reportData.balanceSheet.liabilities.totalLiabilities?.toLocaleString() ||
+                              "0.00"}
+                          </span>
+                        </div>
+                        <div className="text-center my-2 text-sm">+</div>
+                        <div className="flex justify-between items-center">
+                          <span>Total Equity</span>
+                          <span>
+                            GHS{" "}
+                            {reportData.balanceSheet.equity.shareholdersFund?.total?.toLocaleString() ||
+                              "0.00"}
+                          </span>
+                        </div>
+                        <div className="border-t-2 border-current mt-4 pt-3 flex justify-between items-center">
+                          <span className="text-xl">
+                            Total Liabilities + Equity
+                          </span>
+                          <span className="text-xl">
+                            GHS{" "}
+                            {(
+                              (reportData.balanceSheet.liabilities
+                                .totalLiabilities || 0) +
+                              (reportData.balanceSheet.equity.shareholdersFund
+                                ?.total || 0)
+                            ).toLocaleString()}
+                            {reportData.balanceSheet.summary?.balanceCheck
+                              ? " ✓"
+                              : " ✗"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
